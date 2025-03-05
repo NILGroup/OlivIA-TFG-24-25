@@ -362,7 +362,7 @@ export default function Questionario({ onComplete }) {
                                 <button className="final-btn gray" onClick={() => setPage(2)}>
                                     🔄 Revisar opciones
                                 </button>
-                                <button className="btn green" onClick={onComplete}>
+                                <button className="final-btn green" onClick={onComplete}>
                                     ✔️ Sí, estoy listo
                                 </button>
                             </div>
@@ -383,8 +383,8 @@ export default function Questionario({ onComplete }) {
         <div className="container">
             {renderPage()}
             <div className={`nav-buttons ${page === 1 ? "center-nav" : "right-nav"}`}>
-                {page > 1 && <button className="back-btn" onClick={prevPage}>Anterior</button>}
-                {page < 8 && <button className="next-btn" onClick={nextPage}>Siguiente →</button>}
+                {page > 1 && page < 5 && <button className="back-btn" onClick={prevPage}>Anterior</button>}
+                {page < 5 && <button className="next-btn" onClick={nextPage}>Siguiente →</button>}
             </div>
 
             <div className="treasure-map">{treasureMap[page - 1]}</div>
@@ -393,3 +393,4 @@ export default function Questionario({ onComplete }) {
 
     );
 }
+

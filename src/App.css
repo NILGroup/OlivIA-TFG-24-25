@@ -913,38 +913,40 @@ body {
   margin: 20px 0;
 }
 
-/* Estilos de los botones */
 .button-group {
   display: flex;
   gap: 15px;
-  /* Espaciado entre los botones */
   justify-content: center;
   margin-top: 20px;
 }
 
-/* Botones */
 .final-btn {
-  padding: 12px 20px;
+  padding: 15px 25px;
+  /* Ajuste para que sean iguales */
   font-size: 20px;
   font-weight: bold;
   border-radius: 10px;
   cursor: pointer;
   transition: 0.3s;
-  background-color: #aec9d8;
-  color: black
+  width: 200px;
+  /* Fuerza que ambos sean del mismo ancho */
+  text-align: center;
 }
 
-/* Botón de "Estoy listo" */
-.btn-ready .green {
-  background-color: #8c2180;
-  /* Verde */
-  color: black;
+.final-btn.green {
+  background-color: #1CA655;
+  color: white;
 }
 
-.btn-ready:hover {
-  background-color: #27ae60;
-  /* Verde oscuro */
+.final-btn.gray {
+  background-color: #95a5a6;
+  color: white;
 }
+
+.final-btn:hover {
+  opacity: 0.8;
+}
+
 
 /* Botón de "Revisar opciones" */
 .btn-review {
