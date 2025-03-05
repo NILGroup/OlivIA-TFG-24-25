@@ -5,22 +5,18 @@ import robotLogo from "../assets/AventurIA_robot_sinfondo.png";
 export default function InterfazPrincipal() {
 
     /** ================================
-    *  ESTADOS
-    *  ================================
-    */
+*  ESTADOS
+*  ================================
+*/
 
     // Controla la opción seleccionada del menú de preguntas
     const [selectedOption, setSelectedOption] = useState(null);
-
     // Controla el input de la pregunta del usuario
-    const [prompt, setPrompt] = useState("");
-
+    const [prompt, setPrompt] = useState(""); // Separa el input del prompt final
     // Guarda la respuesta generada por la IA
     const [response, setResponse] = useState("");
-
     // Indica si la IA está procesando la respuesta
     const [loading, setLoading] = useState(false);
-
     // Controla si se está mostrando el chat (evita mostrar la pantalla inicial)
     const [showChat, setShowChat] = useState(false);
 
@@ -49,14 +45,16 @@ export default function InterfazPrincipal() {
         { id: 6, text: "¿Cómo se hace", color: "orange", needsQuestionMark: true }
     ];
 
+    const handleOptionClick = (option) => {
+        setSelectedOption(option);
+        setPrompt(""); // Vacía el input al cambiar de opción
+    };
 
-    /** ================================
-     *  FUNCIONES PARA SOLICITAR RESPUESTAS
-     *  ================================
-     */
+    const handleResetQuestion = () => {
+        setSelectedOption(null);
+        setPrompt("");
+    };
 
-
-    // Enviar una pregunta al modelo de IA
     const sendPrompt = async () => {
         if (!prompt.trim()) return;
         setLoading(true);
@@ -64,7 +62,9 @@ export default function InterfazPrincipal() {
         setResponse("");
         setShowHelpOptions(false);
 
-        const selectedText = selectedOption?.id && selectedOption.id <= 6
+        // Generar el prompt final usando la opción seleccionada + lo que escribió el usuario
+        const finalPrompt = selectedOption?.id && selectedOption.id <= 6
+
             ? `${selectedOption.text} ${prompt}${selectedOption.needsQuestionMark ? "?" : ""}`
             : prompt;
 
@@ -77,7 +77,7 @@ export default function InterfazPrincipal() {
                 },
                 body: JSON.stringify({
                     model: "deepseek/deepseek-r1:free",
-                    messages: [{ role: "user", content: selectedText }],
+                    messages: [{ role: "user", content: finalPrompt }],
                 }),
             });
 
@@ -163,67 +163,44 @@ export default function InterfazPrincipal() {
     return (
         <div className="app-wrapper">
             <div className="header-bar">OlivIA</div>
+
             {!showChat ? (
                 <>
                     <img src={robotLogo} alt="AventurIA Logo" className="robot-logo" />
-
                     <h1 className="title">¿Qué exploramos hoy?</h1>
-                    {selectedOption && (
-                        <div className="back-container">
-                            <button className="back-btn" onClick={() => {
-                                setSelectedOption(null);
-                                setPrompt("");
-                            }}>
-                                Volver
-                            </button>
-                        </div>
-                    )}
-                    {!selectedOption ? (
-                        <div className="box-container">
-                            <div className="grid">
-                                {options.map((option) => (
-                                    <button
-                                        key={option.id}
-                                        className={`btn ${option.color}`}
-                                        onClick={() => setSelectedOption(option)}
-                                    >
-                                        {option.text} ___{option.needsQuestionMark ? " ?" : ""}
-                                    </button>
-                                ))}
-                            </div>
-                            <div className="custom-question-container">
+
+                    {/* OPCIONES DE PREGUNTAS */}
+                    <div className="box-container">
+                        <div className="grid">
+                            {options.map((option) => (
                                 <button
-                                    className="btn custom-btn"
-                                    onClick={() => setSelectedOption({ id: "custom", text: "", color: "gray" })}
+                                    key={option.id}
+                                    className={`btn ${option.color}`}
+                                    onClick={() => handleOptionClick(option)}
                                 >
-                                    Formular una pregunta desde cero
+                                    {option.text} ___{option.needsQuestionMark ? " ?" : ""}
                                 </button>
-                            </div>
+                            ))}
                         </div>
-                    ) : (
-                        <>
-                            <div className={`expanded-container ${selectedOption.color}`}>
-                                <h1 className="title">
-                                    <span className="question-wrapper">
-                                        {selectedOption.text}
-                                        <input
-                                            type="text"
-                                            className="input-box centered-input"
-                                            placeholder="Escribe aquí..."
-                                            value={prompt}
-                                            onChange={(e) => setPrompt(e.target.value)}
-                                        />
-                                        {selectedOption.needsQuestionMark ? " ?" : ""}
-                                    </span>
-                                </h1>
-                            </div>
-                            <div className="discover-container">
-                                <button className="discover-btn" onClick={sendPrompt}>
-                                    🔍 ¡Descubrir Respuesta!
-                                </button>
-                            </div>
-                        </>
-                    )}
+                        <button className="custom-btn" onClick={handleResetQuestion}>
+                            Formular una pregunta desde cero
+                        </button>
+                    </div>
+
+                    {/* BLOQUE QUE SE ACTUALIZA DINÁMICAMENTE */}
+                    <div className={`question-container ${selectedOption ? selectedOption.color : ""}`}>
+                        <h3 className="question-title">{selectedOption ? selectedOption.text : "Formula una pregunta"}</h3>
+                        <input
+                            type="text"
+                            className="question-input"
+                            placeholder="Escribe aquí..."
+                            value={prompt}
+                            onChange={(e) => setPrompt(e.target.value)}
+                        />
+                        <button className="discover-btn" onClick={sendPrompt}>
+                            🔍 ¡Descubrir Respuesta!
+                        </button>
+                    </div>
                 </>
             ) : (
                 <div className="chat-wrapper">
