@@ -1,0 +1,1148 @@
+/* Fondo de la aplicación web*/
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f5f9fa;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+
+}
+
+/* Barra fija arriba con el titulito */
+.header-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: #0d0b3f;
+  color: rgb(255, 255, 255);
+  text-align: center;
+  font-size: 50px;
+  font-style: italic;
+  font-weight: bold;
+  padding: 10px 0;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  /*esto es lo que hace que se solape encima de todo*/
+  z-index: 1000;
+}
+
+/* Contenedor general */
+.app-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* Espacio para el header, evita solapamiento */
+  min-height: 100vh;
+  padding-top: 100px;
+  /* Deja espacio para el header */
+  padding-bottom: 70px;
+
+}
+
+/* Título de la interfaz principal */
+.title {
+  font-size: 60px;
+  font-weight: bold;
+  margin-bottom: 60px;
+  text-align: center;
+  color: black;
+}
+
+/* Contenedor de cuestionario */
+.container {
+  text-align: center;
+  padding: 30px;
+  background: rgb(241, 243, 244);
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  /* Centra verticalmente el contenido */
+  align-items: center;
+  margin-top: 90px;
+
+  /* Centra horizontalmente */
+}
+
+/* Contenedor de preguntas que ayudan a generar preguntas*/
+.box-container {
+  text-align: center;
+  padding: 30px;
+  background: rgb(255, 255, 255);
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+
+}
+
+/* Como estan divididas los botones para generar pregunta*/
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  max-width: 750px;
+  margin: 20px auto;
+}
+
+/* Estilos generales para botones de generar pregunta*/
+.btn,
+.custom-btn {
+  padding: 15px;
+  font-size: 30px;
+  border: 3px solid transparent;
+  cursor: pointer;
+  color: black;
+  border-radius: 12px;
+  font-weight: bold;
+  transition: 0.3s;
+  text-align: center;
+}
+
+.custom-btn {
+  background-color: #e0e0e0;
+  border-color: #b0b0b0;
+  margin-top: 30px;
+
+}
+
+.custom-btn:hover {
+  background-color: #d6d6d6;
+  border-color: #909090;
+
+}
+
+/* Colores de botones */
+.yellow {
+  background-color: #f9e79f;
+  border-color: #f1c40f;
+}
+
+.blue {
+  background-color: #b8dcf5;
+  border-color: #3498db;
+}
+
+.green {
+  background-color: #d8f5e0;
+  border-color: #1dc764;
+}
+
+.red {
+  background-color: #f5b7b1;
+  border-color: #e74c3c;
+}
+
+.purple {
+  background-color: #d7bde2;
+  border-color: #9b59b6;
+  box-shadow: 0 4px 8px rgba(114, 111, 111, 0.2);
+
+}
+
+.orange {
+  background-color: #fcdaa3;
+  border-color: #e67e22;
+  box-shadow: 0 4px 8px rgba(114, 111, 111, 0.2);
+
+}
+
+/* Contenedor de boton generado expandido */
+.expanded-container {
+  padding: 50px;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(114, 111, 111, 0.2);
+  background-color: #dbdbdb;
+  border: 3px solid #939393;
+  max-width: 800px;
+  text-align: center;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 30px;
+  transition: background-color 0.3s ease;
+}
+
+/* Asignamos colores dinámicamente al contenedor expandido */
+.expanded-container.yellow {
+  background-color: #fdf2d6;
+  border-color: #f1c40f;
+}
+
+.expanded-container.blue {
+  background-color: #d4eaf7;
+  border-color: #3498db;
+}
+
+.expanded-container.green {
+  background-color: #d8f5e0;
+  border-color: #1ca655;
+}
+
+.expanded-container.red {
+  background-color: #f8d7da;
+  border-color: #e74c3c;
+}
+
+.expanded-container.purple {
+  background-color: #ebdef0;
+  border-color: #9b59b6;
+}
+
+.expanded-container.orange {
+  background-color: #fdebd0;
+  border-color: #e67e22;
+}
+
+/* Ajuste del input dentro del recuadro para alinearse con el texto */
+.input-box {
+  border: none;
+  background: transparent;
+  font-size: 28px;
+  /* Mismo tamaño que el texto de la pregunta */
+  text-align: center;
+  outline: none;
+  width: auto;
+  min-width: 150px;
+  max-width: 500px;
+  border-bottom: 2px solid black;
+  font-weight: bold;
+  display: inline-block;
+  padding: 5px;
+}
+
+/* Asegurar que el input está alineado correctamente */
+.question-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  /* Espacio entre el texto y el input */
+  flex-wrap: wrap;
+
+}
+
+/* Input especial para preguntas personalizadas (boton gris de generacion de preguntas) */
+.custom-input {
+  width: 100%;
+  max-width: 700px;
+  padding: 12px;
+  /* Tamaño de fuente mayor */
+  text-align: center;
+  border: 2px solid #dbdbdb;
+  border-radius: 8px;
+  background-color: #ebe9e9;
+  color: black;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.custom-input::placeholder {
+  color: #7a7a7a;
+  font-weight: normal;
+}
+
+/* Efecto al hacer clic en el input */
+.custom-input:focus {
+  outline: none;
+  border-color: #c9c9c9;
+  background-color: #d6d6d6;
+}
+
+/* Asegurar que el input personalizado también esté alineado */
+.centered-input {
+  font-size: 40px;
+  text-align: center;
+  width: auto;
+  min-width: 200px;
+  max-width: 600px;
+  border-bottom: 2px solid black;
+  font-weight: bold;
+}
+
+/* Botón "Volver" */
+.back-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 40px;
+  margin-top: 20px;
+}
+
+.back-btn {
+  background: #b6b6b6;
+  border: none;
+  padding: 12px 20px;
+  font-size: 25px;
+  cursor: pointer;
+  border-radius: 8px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.back-btn::before {
+  content: "← ";
+  font-size: 25px;
+  margin-right: 5px;
+}
+
+
+
+/* Botón de Descubrir (desaparece después de enviar) */
+.discover-btn {
+  display: block;
+  margin: 20px auto;
+  background: #4caf50;
+  color: white;
+  padding: 12px 20px;
+  font-size: 25px;
+  border: none;
+  cursor: pointer;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+.discover-btn:hover {
+  background: #3e8e41;
+}
+
+/* Caja de respuesta */
+.response-box {
+  background: #e4e4e4;
+  padding: 15px;
+  margin-top: 20px;
+  border-radius: 8px;
+  max-width: 700px;
+  text-align: left;
+  color: black;
+  font-weight: normal;
+  line-height: 1.6;
+}
+
+.response-box strong {
+  font-weight: bold;
+}
+
+.response-box h3 {
+  font-size: 18px;
+  font-weight: bold;
+  margin-top: 10px;
+  margin-bottom: 5px;
+}
+
+.response-box ul {
+  padding-left: 20px;
+}
+
+.response-box li {
+  margin-bottom: 5px;
+}
+
+.robot-logo {
+  width: 100px;
+  /* Ajusta según sea necesario */
+  height: auto;
+  display: block;
+  margin: 0 auto 20px;
+  /* Centrada y con margen inferior */
+}
+
+
+.question-page {
+  margin-top: 20px;
+}
+
+.question-page h2 {
+  font-size: 40px;
+  font-weight: bold;
+  color: black;
+  margin-bottom: 20px;
+}
+
+/*      Estilos para el texto explicativo      */
+.question-page p {
+  font-size: 25px;
+  color: black;
+  margin-bottom: 40px;
+}
+
+.question-page h3 {
+  font-size: 30px;
+  color: black;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.nav-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 80px;
+}
+
+/*centra los botones de siguiente dependiendo de que pág estemos*/
+.center-nav {
+  justify-content: center;
+}
+
+.right-nav {
+  justify-content: space-between;
+}
+
+.next-btn,
+.back-btn {
+  background: #ae103d;
+  color: white;
+  padding: 10px 20px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 20px;
+
+}
+
+.back-btn {
+  background: #4e4c4c;
+}
+
+.custom-input {
+  width: 100%;
+  max-width: 400px;
+  padding: 12px;
+  font-size: 16px;
+  text-align: center;
+  border: 2px solid #dbdbdb;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  font-weight: bold;
+  color: black;
+
+  transition: all 0.3s ease;
+}
+
+.custom-input::placeholder {
+  color: #7a7a7a;
+  font-weight: normal;
+}
+
+.custom-input:focus {
+  outline: none;
+  border-color: #c9c9c9;
+  color: black;
+
+  background-color: #e6e6e6;
+}
+
+
+.options-container-3col {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  /* 3 columnas */
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto 30px;
+}
+
+/* Para página 3 (2 columnas) */
+.options-container-2col {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  /* 2 columnas */
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto 30px;
+}
+
+/*   Estilos base de los botones */
+.option-btn {
+  padding: 12px;
+  font-size: 16px;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: bold;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+/*   Opciones sin seleccionar (Colores claros) */
+.option-btn.yellow {
+  background-color: #FDFD96;
+  /* Amarillo claro */
+  border: 2px solid #F1C40F;
+  color: black;
+
+}
+
+.option-btn.blue {
+  background-color: #B0E0E6;
+  /* Azul claro */
+  border: 2px solid #3498DB;
+  color: black;
+
+}
+
+.option-btn.orange {
+  background-color: #FAD7A0;
+  /* Naranja claro */
+  border: 2px solid #E67E22;
+  color: black;
+
+}
+
+.option-btn.red {
+  background-color: #F5B7B1;
+  /* Rojo claro */
+  border: 2px solid #E74C3C;
+  color: black;
+
+}
+
+.option-btn.green {
+  background-color: #ABEBC6;
+  /* Verde claro */
+  border: 2px solid #1CA655;
+  color: black;
+
+}
+
+.option-btn.purple {
+  background-color: #D7BDE2;
+  /* Morado claro */
+  border: 2px solid #9B59B6;
+  color: black;
+
+}
+
+.option-btn.gray {
+  background-color: #D5D8DC;
+  /* Gris claro */
+  border: 2px solid #7A7A7A;
+  color: black;
+
+}
+
+
+/*   Efecto cuando la opción está seleccionada (Colores oscuros del mismo tono) */
+.option-btn.yellow.selected {
+  background-color: #F1C40F;
+  /* Amarillo oscuro */
+  color: white;
+}
+
+.option-btn.blue.selected {
+  background-color: #3498DB;
+  /* Azul oscuro */
+  color: white;
+}
+
+.option-btn.orange.selected {
+  background-color: #E67E22;
+  /* Naranja oscuro */
+  color: white;
+}
+
+.option-btn.red.selected {
+  background-color: #E74C3C;
+  /* Rojo oscuro */
+  color: white;
+}
+
+.option-btn.green.selected {
+  background-color: #1CA655;
+  /* Verde oscuro */
+  color: white;
+}
+
+.option-btn.purple.selected {
+  background-color: #9B59B6;
+  /* Morado oscuro */
+  color: white;
+}
+
+.option-btn.gray.selected {
+  background-color: #7A7A7A;
+  /* Gris oscuro */
+  color: white;
+}
+
+
+/* Estilos del textarea */
+.custom-textarea {
+  width: 80%;
+  max-width: 400px;
+  height: 80px;
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: 2px solid #7a7a7a;
+  background-color: #f8f8f8;
+  resize: none;
+  text-align: center;
+  font-weight: bold;
+  transition: border-color 0.3s ease-in-out;
+}
+
+.custom-textarea:focus {
+  border-color: #333;
+  outline: none;
+  background-color: #fff;
+}
+
+.accept-btn {
+  margin-top: 10px;
+  padding: 8px 15px;
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+  background-color: #074c96;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.accept-btn:hover {
+  background-color: #0056b3;
+}
+
+
+/*OPCION 4*/
+/* Contenedor de herramientas */
+.tools-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  /* Dos columnas */
+  gap: 15px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Elementos arrastrables */
+.tool-item {
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  border-radius: 25px;
+  /* Forma ovalada */
+  cursor: grab;
+  transition: transform 0.2s, background-color 0.3s;
+  user-select: none;
+}
+
+.tool-item:active {
+  cursor: grabbing;
+  transform: scale(1.05);
+}
+
+/* Colores de herramientas */
+.tool-item.green {
+  background-color: #a9dfbf;
+  border: 2px solid #2ecc71;
+  color: black;
+}
+
+.tool-item.blue {
+  background-color: #aed6f1;
+  border: 2px solid #3498db;
+  color: black;
+}
+
+.tool-item.purple {
+  background-color: #d7bde2;
+  border: 2px solid #9b59b6;
+  color: black;
+}
+
+.tool-item.yellow {
+  background-color: #f8c471;
+  border: 2px solid #e67e22;
+  color: black;
+}
+
+/* Zona de soltar */
+.drop-zone {
+  width: 80%;
+  min-height: 100px;
+  background-color: #f3f3f3;
+  border: 3px dashed #bbb;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: bold;
+  margin: 30px auto 0;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+/* Cambia el color cuando un elemento está sobre la zona */
+.drop-zone.drag-over {
+  background-color: #e3e3e3;
+  border-color: #888;
+}
+
+/* Herramientas seleccionadas dentro de la mochila */
+.selected-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 10px;
+  color: black
+}
+
+.selected-tool {
+  padding: 10px 15px;
+  font-size: 14px;
+  font-weight: bold;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.selected-tool:hover {
+  background-color: #d1d1d1;
+}
+
+
+/*OPCION 6*/
+/* Contenedor de todas las opciones */
+.toggle-options-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Ajustar los bullets (más pequeños y alineados a la izquierda) */
+.bullet {
+  font-size: 12px;
+  /* Tamaño más pequeño */
+  color: black;
+  /* Color negro */
+  margin-right: 10px;
+  flex-shrink: 0;
+  /* Evita que se reduzca en tamaño */
+}
+
+/* Ajustar alineación dentro de la opción */
+.toggle-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: white;
+  padding: 10px 15px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 10px;
+  width: 100%;
+  margin-bottom: 30px;
+  /* MÁS SEPARADO */
+
+  max-width: 500px;
+  color: black;
+
+}
+
+/* Texto de la opción */
+.toggle-label {
+  flex-grow: 1;
+  text-align: left;
+  /* Alinear el texto a la izquierda */
+  font-weight: bold;
+}
+
+/* Estilo del switch */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 30px;
+}
+
+/* Ocultar el checkbox original */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* Diseño del slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: #e74c3c;
+  /* Rojo por defecto (NO) */
+  border-radius: 15px;
+  transition: 0.4s;
+}
+
+/* Círculo dentro del switch */
+.slider:before {
+  content: "No";
+  position: absolute;
+  height: 26px;
+  width: 26px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  color: red;
+  transition: 0.4s;
+}
+
+/* Cuando el switch está activo (Sí) */
+.switch input:checked+.slider {
+  background-color: #2ecc71;
+  /* Verde */
+}
+
+.switch input:checked+.slider:before {
+  content: "Sí";
+  transform: translateX(30px);
+  color: green;
+}
+
+
+/* 🎚️ Separación entre los botones de velocidad */
+.speed-controls {
+  display: flex;
+  gap: 15px;
+  /* MÁS ESPACIADO */
+  justify-content: center;
+  margin-top: 20px;
+  margin-bottom: 30px;
+  /* MÁS SEPARADO */
+}
+
+/* Botones de Velocidad - Claros por defecto, Oscuros al Seleccionarlos */
+.speed-button {
+  padding: 12px 25px;
+  font-size: 16px;
+  font-weight: bold;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.3s;
+  background-color: rgba(255, 255, 255, 0.8);
+  /* COLOR CLARO */
+}
+
+/* Botón Lento */
+.speed-button.green {
+  background-color: #b7f6c6;
+  border-color: #28a745;
+  color: black;
+}
+
+.speed-button.green.selected {
+  background-color: #28a745;
+  color: white;
+}
+
+/* Botón Normal */
+.speed-button.yellow {
+  background-color: #ffefbb;
+  border-color: #ffc107;
+  color: black;
+
+}
+
+.speed-button.yellow.selected {
+  background-color: #ffc107;
+  color: black;
+}
+
+/* Botón Rápido */
+.speed-button.orange {
+  background-color: #f8d7da;
+  border-color: #e74c3c;
+  color: black;
+
+}
+
+.speed-button.orange.selected {
+  background-color: #e74c3c;
+  color: white;
+}
+
+/*OPCIPN 8*/
+
+/* Contenedor de la página final */
+.final-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* Centra todos los elementos */
+  justify-content: center;
+  text-align: center;
+}
+
+/* Contenedor para centrar el robot */
+.robot-container {
+  display: flex;
+  justify-content: center;
+  /* Centra horizontalmente */
+  width: 100%;
+}
+
+/* Imagen del robot centrada */
+.robot-img {
+  width: 160px;
+  height: auto;
+  margin: 20px 0;
+}
+
+/* Estilos de los botones */
+.button-group {
+  display: flex;
+  gap: 15px;
+  /* Espaciado entre los botones */
+  justify-content: center;
+  margin-top: 20px;
+}
+
+/* Botones */
+.final-btn {
+  padding: 12px 20px;
+  font-size: 20px;
+  font-weight: bold;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.3s;
+  background-color: #aec9d8;
+  color: black
+}
+
+/* Botón de "Estoy listo" */
+.btn-ready .green {
+  background-color: #8c2180;
+  /* Verde */
+  color: black;
+}
+
+.btn-ready:hover {
+  background-color: #27ae60;
+  /* Verde oscuro */
+}
+
+/* Botón de "Revisar opciones" */
+.btn-review {
+  background-color: #95a5a6;
+  /* Gris */
+  color: white;
+}
+
+.btn-review:hover {
+  background-color: #7f8c8d;
+  /* Gris oscuro */
+}
+
+
+/* Estilos para el mapa del tesoro */
+.treasure-map {
+  font-size: 18px;
+  font-weight: bold;
+  color: black;
+  margin-top: 60px;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+/* Pregunta y Respuesta de la IA (una vez lanzado el "Descurbir"*/
+/* Contenedor del chat */
+.chat-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 90%;
+  max-width: 1000px;
+  gap: 10px;
+  margin-top: 20px;
+  align-items: center;
+}
+
+.chat-container {
+  display: flex;
+  width: 100%;
+}
+
+.user-container {
+  justify-content: flex-end;
+  padding-left: 200px;
+
+}
+
+.ai-container {
+  justify-content: flex-start;
+  padding-right: 20px;
+}
+
+/* Mensaje del usuario (pregunta) */
+.chat-message.user-message {
+  background-color: #d1e7fd;
+  /* Azul claro */
+  color: black;
+  padding: 18px 20px;
+  /* Más padding para mayor tamaño */
+  border-radius: 20px;
+  /* Bordes más redondeados */
+  max-width: 90%;
+  text-align: right;
+  border: 2px solid #6a9bd8;
+  /* Azul más oscuro */
+  position: relative;
+  box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.2);
+  /* Sombra */
+  font-size: 18px;
+  /* Texto más grande */
+  font-weight: bold;
+  margin: 10px 0;
+  /* Espaciado entre mensajes */
+}
+
+/* Mensaje de la IA (respuesta) */
+.chat-message.ai-message {
+  background-color: #f6f6f6;
+  /* Gris claro */
+  color: black;
+  padding: 18px 20px;
+  border-radius: 20px;
+  max-width: 70%;
+  text-align: left;
+  border: 2px solid #bbb;
+  position: relative;
+  box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.2);
+  font-size: 18px;
+  margin: 10px 0;
+}
+
+/* Estilos para el estado de carga */
+.chat-message.loading {
+  font-style: italic;
+  color: gray;
+  padding: 18px 20px;
+  border-radius: 20px;
+  background-color: #f8f9fa;
+  border: 2px solid #bbb;
+  box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.2);
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+}
+
+
+/*PREGUNTAS POST GENERACION RESPUESRA*/
+/* Contenedor de la ayuda del robot */
+.help-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  margin-top: 40px;
+  /* Más separación entre la pregunta y la ayuda */
+  width: 90%;
+  max-width: 600px;
+}
+
+/* Burbuja más grande para la pregunta y el icono */
+.robot-bubble {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  background: #f0f0f0;
+  border-radius: 15px;
+  padding: 15px;
+  max-width: 80%;
+  border: 1px solid #bbb;
+  gap: 10px;
+  margin-bottom: 20px;
+  /* Separación entre la pregunta y los botones */
+  margin-top: 30px;
+
+}
+
+.robot-icon {
+  width: 40px;
+  height: auto;
+}
+
+.robot-bubble p {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  margin: 0;
+}
+
+/* Organización de botones en 2 filas con más espacio entre ellos */
+.help-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  /* Más espacio entre los botones */
+  width: 100%;
+  max-width: 420px;
+}
+
+/* Estilo de los botones */
+.help-btn {
+  padding: 14px;
+  font-size: 14px;
+  font-weight: bold;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.3s;
+  color: rgb(0, 0, 0);
+}
+
+.help-btn.red {
+  background-color: #f5acac;
+  border-color: #fd2e17;
+}
+
+.help-btn.blue {
+  background-color: #63aeeb;
+  border-color: #1d4dd3;
+}
+
+
+.help-btn.green {
+  background-color: #6bc06e;
+  border-color: #059c16;
+}
+
+.help-btn.green:hover {
+  background-color: #059c16;
+
+}
+
+.help-btn.gray {
+  background-color: #b9b9b9;
+  border-color: #393838;
+}
+
+.help-btn.gray:hover {
+  background-color: #393838;
+  color: white;
+
+}
