@@ -19,6 +19,9 @@ export default function InterfazPrincipal() {
     const [loading, setLoading] = useState(false);
     // Controla si se está mostrando el chat (evita mostrar la pantalla inicial)
     const [showChat, setShowChat] = useState(false);
+    // Para lo de escuchar el texto
+    const [chatFlow, setChatFlow] = useState([]);
+
 
     /** ================================
      *  ESTADOS PARA OPCIONES DE AYUDA
@@ -61,15 +64,42 @@ export default function InterfazPrincipal() {
         setPrompt("");
     };
 
+    // Función para leer texto en voz alta
+    const speakText = (text) => {
+        if (!window.speechSynthesis) {
+            alert("Tu navegador no soporta la síntesis de voz.");
+            return;
+        }
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'es-ES';
+        utterance.rate = 1;
+        utterance.pitch = 1;
+
+        window.speechSynthesis.speak(utterance);
+    };
+
+    const pauseSpeech = () => {
+        if (window.speechSynthesis.speaking) {
+            window.speechSynthesis.pause();
+        }
+    };
+
+    // Función para reanudar la lectura
+    const resumeSpeech = () => {
+        if (window.speechSynthesis.paused) {
+            window.speechSynthesis.resume();
+        }
+    };
+
     const sendPrompt = async () => {
         if (!prompt.trim()) return;
 
         setShowUsefulQuestion(false);
         setShowConfirmationButton(false);
-
+        setResponse("");
         setLoading(true);
         setShowChat(true);
-        setResponse("");
         setShowHelpOptions(false);
 
         // Generar el prompt final usando la opción seleccionada + lo que escribió el usuario
@@ -92,7 +122,9 @@ export default function InterfazPrincipal() {
             });
 
             const data = await res.json();
+
             setResponse(data.choices?.[0]?.message?.content || "Sin respuesta :(");
+
             setShowHelpOptions(true);
         } catch (error) {
             console.error("Error obteniendo respuesta:", error);
@@ -100,6 +132,7 @@ export default function InterfazPrincipal() {
         }
         setLoading(false);
     };
+
 
     // BOTON PREGUNTA POST GENERAR RESPUESTA - Pedir un resumen de la respuesta generada
     const requestSummary = async () => {
@@ -289,6 +322,50 @@ export default function InterfazPrincipal() {
                         </div>
                     </div>
 
+                    {chatFlow.map((entry, index) => (
+                        <div
+                            key={index}
+                            className={`chat-container ${entry.type === "user" ? "user-container" : "ai-container"}`}
+                        >
+                            <div className={`chat-message ${entry.type === "user" ? "user-message" : "ai-message"}`}>
+                                <ReactMarkdown>{entry.content}</ReactMarkdown>
+
+                                {/* Iconos de audio y pausa posicionados a la derecha */}
+                                {entry.type === "ai" && (
+                                    <div className="icon-container">
+                                        <button
+                                            className="audio-btn"
+                                            onClick={() => speakText(entry.content)}
+                                            aria-label="Reproducir en voz alta"
+                                            title="Reproducir en voz alta"
+                                        >
+                                            🔊
+                                        </button>
+
+                                        <button
+                                            className="pause-btn"
+                                            onClick={pauseSpeech}
+                                            aria-label="Pausar reproducción"
+                                            title="Pausar reproducción"
+                                        >
+                                            ⏸️
+                                        </button>
+
+                                        <button
+                                            className="resume-btn"
+                                            onClick={resumeSpeech}
+                                            aria-label="Reanudar reproducción"
+                                            title="Reanudar reproducción"
+                                        >
+                                            ▶️
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    ))}
+
+
                     {showHelpOptions && !requestingSummary && (
                         <>
                             {/* Asegura que los botones aparecen en un nuevo contenedor debajo */}
@@ -317,7 +394,7 @@ export default function InterfazPrincipal() {
                             <div className="chat-container ai-container">
                                 <div className="robot-bubble">
                                     <img src={robotLogo} alt="AventurIA" className="robot-icon" />
-                                    <p>¿Esta respuesta ha sido útil?</p>
+                                    <p>¿Te ha quedado todo claro?</p>
                                 </div>
                             </div>
                             <div className="chat-container ai-container">

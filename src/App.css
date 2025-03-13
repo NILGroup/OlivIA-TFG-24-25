@@ -1267,7 +1267,7 @@ body {
   /* Pegado arriba */
   left: 0;
   /* Pegado a la izquierda */
-  width: 100px;
+  width: 150px;
   /* Ancho del botón */
   height: 100%;
   /* Que tenga el alto completo de la barra superior */
@@ -1281,6 +1281,8 @@ body {
   z-index: 2000;
   /* Para que quede por encima */
   display: flex;
+  font-size: 18px;
+
   /* Para centrar el texto */
   align-items: center;
   /* Centra verticalmente */
@@ -1301,7 +1303,7 @@ body {
   position: fixed;
   top: 0;
   left: -300px;
-  width: 280px;
+  width: 300px;
   height: 100vh;
   background-color: #ecf3fb;
   box-shadow: 4px 0 10px rgba(0, 0, 0, 0.2);
@@ -1324,7 +1326,7 @@ body {
 }
 
 .chat-history-sidebar.show {
-  left: 100px;
+  left: 150px;
   /* Ahora empieza desde el borde del botón */
 }
 
@@ -1373,4 +1375,34 @@ body {
     /* Vuelve al color original */
     box-shadow: none;
   }
+}
+
+
+/*ESCUCHAR TEXTO GENERADO*/
+
+.icon-container {
+  display: flex;
+  justify-content: flex-end;
+  /* Mueve los iconos a la derecha */
+  gap: 15px;
+  /* Añade espacio entre los iconos */
+  margin-top: 10px;
+  /* Espacio entre el texto y los iconos */
+}
+
+.audio-btn,
+.pause-btn,
+.resume-btn {
+  background: #ffffff;
+  border: 1px solid #ccc;
+  border-radius: 50%;
+  padding: 8px;
+  cursor: pointer;
+  font-size: 18px;
+  /* Tamaño del icono */
+}
+
+.audio-btn:hover,
+.pause-btn:hover {
+  background: #e0e0e0;
 }
