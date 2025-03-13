@@ -5,9 +5,9 @@ import robotLogo from "../assets/AventurIA_robot_sinfondo.png";
 export default function InterfazPrincipal() {
 
     /** ================================
-*  ESTADOS
-*  ================================
-*/
+    *  ESTADOS
+    *  ================================
+    */
 
     // Controla la opción seleccionada del menú de preguntas
     const [selectedOption, setSelectedOption] = useState(null);
@@ -27,10 +27,16 @@ export default function InterfazPrincipal() {
     const [showHelpOptions, setShowHelpOptions] = useState(false); // Muestra botones de ayuda tras la respuesta
     const [showUsefulQuestion, setShowUsefulQuestion] = useState(false); // Pregunta si la respuesta fue útil
     const [showInitialOptions, setShowInitialOptions] = useState(false); // Muestra las opciones iniciales después de responder
+    const [showConfirmationButton, setShowConfirmationButton] = useState(false);
 
     // Estados para manejar botones de resumen y ejemplo
     const [requestingSummary, setRequestingSummary] = useState(false);
     const [requestingExample, setRequestingExample] = useState(false);
+
+    // Estado para almacenar el historial de chats
+    const [chatHistory, setChatHistory] = useState([]);
+    const [showHistory, setShowHistory] = useState(false); // Mostrar/ocultar historial
+
 
     /** ================================
      *  OPCIONES DE PREGUNTAS DISPONIBLES
@@ -57,6 +63,10 @@ export default function InterfazPrincipal() {
 
     const sendPrompt = async () => {
         if (!prompt.trim()) return;
+
+        setShowUsefulQuestion(false);
+        setShowConfirmationButton(false);
+
         setLoading(true);
         setShowChat(true);
         setResponse("");
@@ -155,6 +165,27 @@ export default function InterfazPrincipal() {
         setLoading(false);
     };
 
+    // BOTON PREGUNTA POST GENERAR RESPUESTA - Guardar chat en historial y empezar de nuevo
+    const toggleHistory = () => setShowHistory(!showHistory);
+
+    const saveChatToHistory = () => {
+        const chatEntry = {
+            prompt: selectedOption?.id && selectedOption.id <= 6
+                ? `${selectedOption.text} ${prompt}${selectedOption.needsQuestionMark ? "?" : ""}`
+                : prompt,
+            response: response,
+            timestamp: new Date().toLocaleString(),
+            isNew: true // Marcar el mensaje como "nuevo"
+        };
+
+        setChatHistory([...chatHistory.map(entry => ({ ...entry, isNew: false })), chatEntry]);
+        setShowInitialOptions(false); // Cerrar opciones de ayuda
+        setShowChat(false); // Volver a la pantalla principal
+        setShowHistory(true); // Abrir el historial automáticamente
+    };
+
+
+
     /** ================================
      *  RETORNO DE LA INTERFAZ 
      *  ================================
@@ -163,6 +194,39 @@ export default function InterfazPrincipal() {
     return (
         <div className="app-wrapper">
             <div className="header-bar">OlivIA</div>
+
+            {/* Botón para abrir/cerrar el historial */}
+            <button
+                className={`history-btn ${showHistory ? "open" : "closed"}`}
+                onClick={toggleHistory}
+            >
+                {showHistory ? "📁 Cerrar Historial" : "📂 Abrir Historial"}
+            </button>
+
+            {/* Menú lateral del historial */}
+            <div className={`chat-history-sidebar ${showHistory ? "show" : "hide"}`}>
+                {chatHistory.length === 0 ? (
+                    <p>Aún no hay chats guardados.</p>
+                ) : (
+                    <ul>
+                        {chatHistory.map((entry, index) => (
+                            <li
+                                key={index}
+                                className={`chat-bubble ${entry.isNew ? "new-entry" : ""}`}
+                                onClick={() => alert(`Pregunta: ${entry.prompt}\n\nRespuesta: ${entry.response}`)}
+                            >
+                                <div className="chat-preview">
+                                    {entry.prompt.substring(0, 40)}
+                                </div>
+                                <div className="chat-timestamp">
+                                    <small>{entry.timestamp}</small>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </div>
+
 
             {!showChat ? (
                 <>
@@ -240,8 +304,8 @@ export default function InterfazPrincipal() {
                                     <button className="help-btn green" onClick={requestSummary}>Dame un resumen</button>
                                     <button className="help-btn red">Responder en lenguaje más sencillo</button>
                                     <button className="help-btn gray" onClick={() => {
-                                        setShowHelpOptions(false);
                                         setShowUsefulQuestion(true);
+                                        setShowHelpOptions(false);
                                     }}>No, gracias</button>
                                 </div>
                             </div>
@@ -258,45 +322,23 @@ export default function InterfazPrincipal() {
                             </div>
                             <div className="chat-container ai-container">
                                 <div className="help-buttons">
-                                    <button className="help-btn green" onClick={() => setShowInitialOptions(true)}>Sí, todo claro</button>
-                                    <button className="help-btn gray" onClick={() => {
-                                        setShowUsefulQuestion(false);
-                                        setShowHelpOptions(true);
-                                    }}>No, tengo dudas</button>
-                                </div>
-                            </div>
-                        </>
-                    )}
+                                    <button
+                                        className="help-btn gray"
+                                        onClick={() => {
+                                            setShowUsefulQuestion(false);   // Oculta la pregunta "¿Ha sido útil?"
+                                            setShowHelpOptions(true);       // Muestra opciones de ayuda
+                                            setShowConfirmationButton(true); // Activa el botón "Sí, todo claro"
+                                        }}
+                                    >
+                                        🤔 No, tengo todavía dudas
+                                    </button>
+                                    <button
+                                        className="help-btn green"
+                                        onClick={saveChatToHistory}
+                                    >
+                                        😊 Sí, todo claro
+                                    </button>
 
-                    {showInitialOptions && (
-                        <>
-                            <div className="chat-container ai-container">
-                                <div className="robot-bubble">
-                                    <img src={robotLogo} alt="AventurIA" className="robot-icon" />
-                                    <p>Las mejores aventuras empiezan con una pregunta, ¿quieres hacer otra?</p>
-                                </div>
-                            </div>
-                            <div className="chat-container ai-container">
-                                <div className="grid">
-                                    {options.map((option) => (
-                                        <button
-                                            key={option.id}
-                                            className={`btn ${option.color}`}
-                                            onClick={() => {
-                                                setSelectedOption(option); // Selecciona la nueva opción
-                                                setResponse(""); // Borra la respuesta anterior
-                                                setPrompt(""); // Limpia el input de la pregunta
-                                                setShowChat(false); // Vuelve al expanded-container
-                                                setLoading(false); // Reinicia el estado de carga
-                                                setShowHelpOptions(false);  // Esconde opciones de ayuda anteriores
-                                                setShowUsefulQuestion(false); // Oculta la pregunta de "¿Te fue útil?"
-                                                setShowInitialOptions(false); // Oculta los botones de hacer otra pregunta
-                                            }}
-                                        >
-                                            {option.text} {option.needsQuestionMark ? " ?" : ""}
-                                        </button>
-
-                                    ))}
                                 </div>
                             </div>
                         </>

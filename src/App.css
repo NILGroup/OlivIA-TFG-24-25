@@ -1257,3 +1257,120 @@ body {
   outline: none;
   background-color: rgba(255, 255, 255, 0.5);
 }
+
+
+/*HISTORIAL*/
+/* Botón del historial - Ahora forma parte de la barra superior */
+.history-btn {
+  position: fixed;
+  top: 0;
+  /* Pegado arriba */
+  left: 0;
+  /* Pegado a la izquierda */
+  width: 100px;
+  /* Ancho del botón */
+  height: 100%;
+  /* Que tenga el alto completo de la barra superior */
+  background-color: #0d0b3f;
+  /* Mismo color que la barra superior */
+  color: #fff;
+  /* Texto blanco */
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  z-index: 2000;
+  /* Para que quede por encima */
+  display: flex;
+  /* Para centrar el texto */
+  align-items: center;
+  /* Centra verticalmente */
+  justify-content: center;
+  /* Centra horizontalmente */
+  border-right: 2px solid #2a5d9e;
+  /* Borde que lo separa del historial */
+  transition: background-color 0.3s ease;
+}
+
+.history-btn:hover {
+  background-color: #1a2b60;
+  /* Efecto al pasar el mouse */
+}
+
+/* Historial lateral */
+.chat-history-sidebar {
+  position: fixed;
+  top: 0;
+  left: -300px;
+  width: 280px;
+  height: 100vh;
+  background-color: #ecf3fb;
+  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.2);
+  padding: 15px;
+  transition: left 0.3s ease;
+  z-index: 1000;
+  overflow-y: auto;
+  color: black;
+
+  /* CENTRAR TEXTO Y BURBUJITAS EN EL MEDIO */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  border-left: 3px solid #2a5d9e;
+  /* Línea divisoria azul */
+  padding-left: 10px;
+}
+
+.chat-history-sidebar.show {
+  left: 100px;
+  /* Ahora empieza desde el borde del botón */
+}
+
+.chat-history-sidebar.hide {
+  left: -300px;
+}
+
+/* Burbujas del historial */
+.chat-bubble {
+  background-color: #d6e4f0;
+  /* Azul claro */
+  border: 2px solid #2a5d9e;
+  /* Borde azul oscuro */
+  border-radius: 15px;
+  padding: 10px 15px;
+  margin-bottom: 8px;
+  color: #000;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+/* Efecto muy guay con luces cuando se agrega un chat nuevo */
+.chat-bubble.new-entry {
+  animation: highlightEffect 2s ease forwards;
+}
+
+@keyframes highlightEffect {
+  0% {
+    transform: scale(0.9);
+    background-color: #fff3cd;
+    /* Amarillo claro */
+    box-shadow: 0 0 10px 4px #ffeb3b;
+    /* Brillo */
+  }
+
+  50% {
+    transform: scale(1.1);
+    background-color: #ffe082;
+    /* Amarillo intenso */
+    box-shadow: 0 0 15px 6px #ffc107;
+  }
+
+  100% {
+    transform: scale(1);
+    background-color: #d6e4f0;
+    /* Vuelve al color original */
+    box-shadow: none;
+  }
+}

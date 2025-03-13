@@ -10,10 +10,10 @@ import robotLogoCuerpo from "../assets/AventurIA_robotCuerposinfondo.png";
 
 const treasureMap = [
 
-    "❌ - - - 🏆",
-    "- ❌ - - 🏆",
-    "- - ❌ - 🏆",
-    "- - - ❌ 🏆",
+    "📍- - - 🏆",
+    "- 📍 - - 🏆",
+    "- - 📍 - 🏆",
+    "- - - 📍 🏆",
     "- - - - 🏆!"
 ];
 
