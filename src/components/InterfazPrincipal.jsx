@@ -2,11 +2,12 @@ import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import robotLogo from "../assets/AventurIA_robot_sinfondo.png";
 
+
 export default function InterfazPrincipal() {
 
     /** ================================
-    *  ESTADOS
-    *  ================================
+    *             ESTADOS
+    *  =================================
     */
 
     // Controla la opción seleccionada del menú de preguntas
@@ -41,9 +42,9 @@ export default function InterfazPrincipal() {
     const [showHistory, setShowHistory] = useState(false); // Mostrar/ocultar historial
 
 
-    /** ================================
+    /** =================================
      *  OPCIONES DE PREGUNTAS DISPONIBLES
-     *  ================================
+     *  =================================
      */
     const options = [
         { id: 1, text: "Dame un ejemplo de", color: "yellow" },
@@ -220,7 +221,7 @@ export default function InterfazPrincipal() {
 
 
     /** ================================
-     *  RETORNO DE LA INTERFAZ 
+     *     RETORNO DE LA INTERFAZ 
      *  ================================
      */
 

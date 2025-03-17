@@ -17,6 +17,7 @@ const treasureMap = [
     "- - - - 🏆!"
 ];
 
+
 export default function Questionario({ onComplete }) {
 
     /** ================================
@@ -27,34 +28,159 @@ export default function Questionario({ onComplete }) {
     // Control de la página actual del cuestionario
     const [page, setPage] = useState(1);
 
-    // Selección del usuario en la pregunta 2
-    const [userSelection, setUserSelection] = useState("");
+    // Selección del usuario en la pregunta 2 ( solo una opcion )
+    // const [userSelection, setUserSelection] = useState("");
 
     // Múltiples selecciones del usuario en preguntas tipo checkbox
     const [userSelections, setUserSelections] = useState([]);
 
     // Estado para el campo "Otra opción"
     const [otraSeleccionada, setOtraSeleccionada] = useState(false);
-    const [otraRespuesta, setOtraRespuesta] = useState("");
+    const [otraData, setOtraData] = useState({
+        caso2: { seleccionada: false, respuesta: "", guardada: false },
+        caso3: { seleccionada: false, respuesta: "", guardada: false }
+    });
 
 
-    /** ================================
-     *  FUNCIONES DE SELECCIÓN
-     *  ================================
+    /** ============================================
+     *  ALMACENAMIENTO DE SELECCIÓN DEL CUESTIONARIO
+     *  ============================================
      */
+    const [summary, setSummary] = useState({
+        nombre: "",            // Para el caso 1
+        camino: [],            // Para el caso 2
+        retos: [],             // Para el caso 3
+        herramientas: [],      // Para el caso 4
+        mostrarPorPartes: false // Para la opción "Mostrar por partes"
+    });
 
-    // Selección de opciones múltiples (checkbox)
-    const toggleSelection = (id) => {
-        setUserSelections(prev =>
-            prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
-        );
+    // PÁGINA 1
+    const handleNameChange = (e) => {
+        setSummary(prevSummary => ({
+            ...prevSummary,
+            nombre: e.target.value
+        }));
     };
 
-    // Manejar el campo "Otra opción"
-    const toggleOtra = () => {
-        setOtraSeleccionada(!otraSeleccionada);
-        if (otraSeleccionada) setOtraRespuesta("");
+    // PÁGINA 2
+    const toggleCamino = (id) => {
+        if (id === "Otra") {
+            setOtraSeleccionada(!otraSeleccionada);
+
+            if (!otraSeleccionada && otraRespuesta.trim()) {
+                setSummary(prevSummary => ({
+                    ...prevSummary,
+                    camino: [...prevSummary.camino, `Otra - ${otraRespuesta}`]
+                }));
+            } else {
+                setSummary(prevSummary => ({
+                    ...prevSummary,
+                    camino: prevSummary.camino.filter(item => !item.startsWith("Otra - "))
+                }));
+            }
+        } else {
+            setSummary(prevSummary => ({
+                ...prevSummary,
+                camino: prevSummary.camino.includes(id)
+                    ? prevSummary.camino.filter((item) => item !== id)
+                    : [...prevSummary.camino, id]
+            }));
+        }
     };
+
+
+    // PÁGINA 3
+    const toggleReto = (id) => {
+        if (id === "Otra") {
+            setOtraSeleccionada(!otraSeleccionada);
+
+            if (!otraSeleccionada && otraRespuesta.trim()) {
+                setSummary(prevSummary => ({
+                    ...prevSummary,
+                    retos: [...prevSummary.retos, `Otra - ${otraRespuesta}`]
+                }));
+            } else {
+                setSummary(prevSummary => ({
+                    ...prevSummary,
+                    retos: prevSummary.retos.filter(item => !item.startsWith("Otra - "))
+                }));
+            }
+        } else {
+            setSummary(prevSummary => ({
+                ...prevSummary,
+                retos: prevSummary.retos.includes(id)
+                    ? prevSummary.retos.filter((item) => item !== id)
+                    : [...prevSummary.retos, id]
+            }));
+        }
+    };
+
+
+
+    // PÁGINA 4
+    const toggleTool = (id) => {
+        setSummary(prevSummary => ({
+            ...prevSummary,
+            herramientas: prevSummary.herramientas.includes(id)
+                ? prevSummary.herramientas.filter((item) => item !== id)
+                : [...prevSummary.herramientas, id]
+        }));
+
+    };
+
+    const toggleMostrarPorPartes = () => {
+        setPauseEnabled(!pauseEnabled);
+
+        setSummary(prevSummary => ({
+            ...prevSummary,
+            mostrarPorPartes: !pauseEnabled
+        }));
+    };
+
+    const generateSummary = () => (
+        <div className="summary-box">
+            <h3>Resumen de tu nueva compañera virtual:</h3>
+
+            {/* Nombre del usuario */}
+            <h4>👤 ¡Tu compañera digital te conoce como:</h4>
+            <p>{summary.nombre || "No se ha introducido el nombre."}</p>
+
+            {/* Camino elegido */}
+            <h4>⭐ Te identificas con:</h4>
+            <ul>
+                {summary.camino.length > 0
+                    ? summary.camino.map((item) => <li key={item}>{item}</li>)
+                    : <li>No se seleccionó ningún camino.</li>
+                }
+            </ul>
+
+            {/* Retos seleccionados */}
+            <h4>📌 Te cuesta:</h4>
+            <ul>
+                {summary.retos.length > 0
+                    ? summary.retos.map((item) => <li key={item}>{item}</li>)
+                    : <li>No se seleccionó ningún reto.</li>
+                }
+            </ul>
+
+            {/* Herramientas seleccionadas */}
+            <h4>🧠 Tu compañera te ayudará usando:</h4>
+            <ul>
+                {summary.herramientas.length > 0
+                    ? summary.herramientas.map((toolId) => {
+                        if (toolId === "mostrarPorPartes") {
+                            return <li key={toolId}>📚 Mostrar información por partes</li>;
+                        }
+                        const tool = tools.find((t) => t.id === toolId);
+                        return <li key={toolId}>{tool.label}</li>;
+                    })
+                    : <li>No se seleccionó ninguna herramienta.</li>
+                }
+            </ul>
+
+        </div>
+    );
+
 
     /** ================================
      *  HERRAMIENTAS (Drag & Drop)
@@ -64,11 +190,13 @@ export default function Questionario({ onComplete }) {
     // Lista de herramientas disponibles
     const tools = [
         { id: "ejemplo", label: "🖋️ Usar ejemplos", color: "green" },
-        { id: "resumenes", label: "📒 Respuestas en bullets", color: "purple" },
-        { id: "leer", label: "🔊 Leer en voz alta", color: "blue" },
-        { id: "imagenes", label: "📷 Insertar Imágenes", color: "blue" },
+        { id: "bullet", label: "📒 Respuestas en bullets", color: "purple" },
+        { id: "textocorto", label: "📃 Texto Corto", color: "blue" },
         { id: "frasescortas", label: "✂️ Frases cortas", color: "yellow" },
+        { id: "mostrarPorPartes", label: "📚 Mostrar información por partes", color: "orange" }  // NUEVA OPCIÓN
     ];
+
+
 
     // Estado de herramientas seleccionadas
     const [selectedTools, setSelectedTools] = useState([]);
@@ -178,179 +306,293 @@ export default function Questionario({ onComplete }) {
                 return (
                     <div className="question-page">
                         <img src={robotLogo} alt="AventurIA Logo" className="robot-logo" />
-                        <h2>Personaliza tu compañero digital de Inteligencia Artificial</h2>
-                        <p>¡Bienvenido a OlivIA! Para hacer esta aventura única, primero queremos conocerte.</p>
+                        <h2> ¡Vamos a crear a tu Compañero Digital de Inteligencia Artifical!</h2>
+                        <p>¡Bienvenido! Hoy vas a diseñar a OlivIA, tu compañera digital única, hecho a tu medida.
+                            <br />                            Ella te ayudará a aprender, resolver dudas y acompañarte en tu día a día.
+                        </p>
                         <h3>¿Cómo te llamas?</h3>
-                        <input type="text" placeholder="Escribe tu nombre aquí..." className="custom-input" />
+                        <input
+                            type="text"
+                            placeholder="Escribe tu nombre aquí..."
+                            className="custom-input"
+                            value={summary.nombre}
+                            onChange={handleNameChange}
+                        />
                     </div>
                 );
             case 2:
                 return (
                     <div className="question-page">
-                        <h2>Elige tu camino 🧭</h2>
-                        <p>Cada explorador tiene su propia historia.</p>
-                        <h3>¿Qué camino te representa más?</h3>
+                        <h2>⭐ Paso 1: Cada persona es única</h2>
+                        <p>Para que OlivIA pueda ayudarte mejor, quiere conocerte un poquito más.</p>
+                        <h3>¿Con qué te sientes más identificado?</h3>
 
-                        <div className="options-container-3col">
+                        <div className="toggle-options-container">
                             {[
-                                { id: "TEA", label: "🧩 TEA", color: "yellow" },
-                                { id: "Dislexia", label: "🔠 Dislexia", color: "blue" },
-                                { id: "TDAH", label: "⚡TDAH", color: "orange" },
-                                { id: "Memoria", label: "🧠 Memoria", color: "red" },
-                                { id: "Otra", label: "❓Otra", color: "purple" },
-                                { id: "NoSe", label: "❌ No responder", color: "gray" }
+                                { id: "TEA", label: "🧩 TEA" },
+                                { id: "Dislexia", label: "🔠 Dislexia" },
+                                { id: "TDAH", label: "⚡ TDAH" },
+                                { id: "Memoria", label: "🧠 Memoria" },
+                                { id: "Prefiero no responder", label: "❌ No responder" }
                             ].map((option) => (
-                                <button
+                                <div
                                     key={option.id}
-                                    className={`option-btn ${option.color} ${userSelection === option.id ? "selected" : ""}`}
-                                    onClick={() => setUserSelection(option.id)}
+                                    className={`toggle-option ${userSelections.includes(option.id) ? "active" : ""}`}
+
                                 >
-                                    {option.label}
-                                </button>
+                                    <span className="toggle-label">{option.label}</span>
+                                    <label className="switch">
+                                        <input
+                                            type="checkbox"
+                                            checked={summary.camino.includes(option.id)}
+                                            onChange={() => toggleCamino(option.id)} />
+                                        <span className="slider"></span>
+                                    </label>
+                                </div>
                             ))}
-                        </div>
 
-                        {/* Mostrar el campo de texto si "Otra" está seleccionada */}
-                        {userSelection === "Otra" && (
-                            <div className="other-input-container">
-                                <textarea
-                                    className="custom-textarea"
-                                    placeholder="Escribe aquí..."
-                                    value={otraRespuesta}
-                                    onChange={(e) => setOtraRespuesta(e.target.value)}
-                                    style={{ color: "black" }} // Texto en negro
-                                ></textarea>
-
-                                {/* Mostrar botón "Guardar" solo si hay texto */}
-                                {otraRespuesta.trim() && (
-                                    <button
-                                        className="accept-btn"
-                                        onClick={() => alert(`Guardado: ${otraRespuesta}`)}
-                                    >
-                                        ✅ Guardar
-                                    </button>
-                                )}
+                            {/* Botón "Otra opción" en Caso 2 */}
+                            <div className={`toggle-option ${otraData.caso2.guardada ? "active" : ""}`}>
+                                <span className="toggle-label">➕ Otra opción</span>
+                                <label className="switch">
+                                    <input
+                                        type="checkbox"
+                                        checked={otraData.caso2.seleccionada}
+                                        onChange={() =>
+                                            setOtraData(prev => ({
+                                                ...prev,
+                                                caso2: { ...prev.caso2, seleccionada: !prev.caso2.seleccionada }
+                                            }))
+                                        }
+                                    />
+                                    <span className="slider"></span>
+                                </label>
                             </div>
-                        )}
-                    </div>
-                );
-            case 3:
-                return (
-                    <div className="question-page">
-                        <h2>Retos en el viaje 🔥</h2>
-                        <p>Durante el camino, te enfrentas a diferentes tipos de información.</p>
-                        <h3>¿Cuáles de estos te resultan más difíciles de entender?</h3>
 
-                        <div className="options-container-2col">
-                            {[
-                                { id: "TextosLargos", label: "Textos largos", color: "yellow", icon: "📖" },
-                                { id: "PalabrasDificiles", label: "Palabras difíciles", color: "green", icon: "🧩" },
-                                { id: "OrganizarIdeas", label: "Organizar ideas", color: "blue", icon: "📝" },
-                                { id: "MantenerAtencion", label: "Mantener la atención", color: "orange", icon: "🎯" },
-                                { id: "RecordarUsarCerebro", label: "Recordar", color: "purple", icon: "🧠" },
-                            ].map((option) => (
-                                <button
-                                    key={option.id}
-                                    className={`option-btn ${option.color} ${userSelections.includes(option.id) ? "selected" : ""}`}
-                                    onClick={() => toggleSelection(option.id)}
-                                >
-                                    {option.icon} {option.label}
-                                </button>
-                            ))}
-                            {/* Botón "Otra" con funcionalidad especial */}
-                            <button
-                                className={`option-btn gray ${otraSeleccionada ? "selected" : ""}`}
-                                onClick={toggleOtra}
-                            >
-                                ➕ Otra
-                            </button>
-                        </div>
-                        {
-                            otraSeleccionada && (
+                            {/* Campo de texto y botón de guardar */}
+                            {otraData.caso2.seleccionada && (
                                 <div className="other-input-container">
                                     <textarea
                                         className="custom-textarea"
                                         placeholder="Escribe aquí..."
-                                        value={otraRespuesta}
-                                        onChange={(e) => setOtraRespuesta(e.target.value)}
-                                        style={{ color: "black" }} // Texto en negro
+                                        value={otraData.caso2.respuesta}
+                                        onChange={(e) =>
+                                            setOtraData(prev => ({
+                                                ...prev,
+                                                caso2: { ...prev.caso2, respuesta: e.target.value }
+                                            }))
+                                        }
                                     ></textarea>
-                                    {/* Mostrar botón solo si hay texto */}
-                                    {otraRespuesta.trim() && (
+
+                                    {otraData.caso2.respuesta.trim() && (
                                         <button
-                                            className="accept-btn"
-                                            onClick={() => alert(`Guardado: ${otraRespuesta}`)}
+                                            className={`accept-btn ${otraData.caso2.guardada ? "saved" : ""}`}
+                                            onClick={() => {
+                                                setSummary(prevSummary => ({
+                                                    ...prevSummary,
+                                                    camino: [...prevSummary.camino, `Otra - ${otraData.caso2.respuesta}`]
+                                                }));
+                                                setOtraData(prev => ({
+                                                    ...prev,
+                                                    caso2: { ...prev.caso2, guardada: true }
+                                                }));
+                                            }}
                                         >
-                                            ✅ Guardar
+                                            {otraData.caso2.guardada ? "✅ Guardado" : "✅ Guardar"}
                                         </button>
                                     )}
                                 </div>
-                            )
-                        }
+                            )}
+                        </div>
                     </div>
                 );
+
+            case 3:
+                return (
+                    <div className="question-page">
+                        <h2>🌟 Paso 2: ¡Haz que tu compañera digital sea tu mejor guía!</h2>
+                        <h3>¿Qué te cuesta más entender?</h3>
+                        <p>Elige todas las que veas necesarias:</p>
+
+                        <div className="toggle-options-container">
+                            {[
+                                { id: "Textos Largos", label: "Textos largos", color: "yellow", icon: "📖 " },
+                                { id: "Palabras Dificiles", label: "Palabras difíciles", color: "green", icon: "🧩 " },
+                                { id: "Organizar Ideas", label: "Organizar ideas", color: "blue", icon: "📝 " },
+                                { id: "Mantener Atencion", label: "Mantener la atención", color: "orange", icon: "🎯 " },
+                                { id: "Memoria", label: "Recordar", color: "purple", icon: "🧠 " },
+                            ].map((option) => (
+                                <div
+                                    key={option.id}
+                                    className={`toggle-option ${userSelections.includes(option.id) ? "active" : ""}`}
+
+                                >
+                                    <span className="toggle-label"> {option.icon}{option.label}</span>
+                                    <label className="switch">
+                                        <input
+                                            type="checkbox"
+                                            checked={summary.retos.includes(option.id)}
+                                            onChange={() => toggleReto(option.id)}
+                                        />
+                                        <span className="slider"></span>
+                                    </label>
+                                </div>
+                            ))}
+
+                            {/* Botón "Otra opción" en Caso 3 */}
+                            <div className={`toggle-option ${otraData.caso3.guardada ? "active" : ""}`}>
+                                <span className="toggle-label">➕ Otra opción</span>
+                                <label className="switch">
+                                    <input
+                                        type="checkbox"
+                                        checked={otraData.caso3.seleccionada}
+                                        onChange={() =>
+                                            setOtraData(prev => ({
+                                                ...prev,
+                                                caso3: { ...prev.caso3, seleccionada: !prev.caso3.seleccionada }
+                                            }))
+                                        }
+                                    />
+                                    <span className="slider"></span>
+                                </label>
+                            </div>
+
+                            {/* Campo de texto y botón de guardar */}
+                            {otraData.caso3.seleccionada && (
+                                <div className="other-input-container">
+                                    <textarea
+                                        className="custom-textarea"
+                                        placeholder="Escribe aquí..."
+                                        value={otraData.caso3.respuesta}
+                                        onChange={(e) =>
+                                            setOtraData(prev => ({
+                                                ...prev,
+                                                caso3: { ...prev.caso3, respuesta: e.target.value }
+                                            }))
+                                        }
+                                    ></textarea>
+
+                                    {otraData.caso3.respuesta.trim() && (
+                                        <button
+                                            className={`accept-btn ${otraData.caso3.guardada ? "saved" : ""}`}
+                                            onClick={() => {
+                                                setSummary(prevSummary => ({
+                                                    ...prevSummary,
+                                                    retos: [...prevSummary.retos, `Otra - ${otraData.caso3.respuesta}`]
+                                                }));
+                                                setOtraData(prev => ({
+                                                    ...prev,
+                                                    caso3: { ...prev.caso3, guardada: true }
+                                                }));
+                                            }}
+                                        >
+                                            {otraData.caso3.guardada ? "✅ Guardado" : "✅ Guardar"}
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+
+
+                        </div>
+                    </div>
+                );
+
             case 4:
                 return (
                     <div className="question-page">
-                        <h2>Elección de herramientas 🎒</h2>
-                        <p>Para luchar contra los retos seleccionados anteriormente</p>
-                        <h3>¿Qué herramientas crees que te pueden ayudar?</h3>
+                        <h2>🎭 Paso 3: Dale una personalidad a tu compañera virtual </h2>
+                        <p>Teniendo en cuenta lo elegido antes</p>
+                        <h3>¿Cómo quieres que te ayude tu compañero digital? </h3>
+                        Elige todas las opciones que veas necesarias:
+                        {/* Definición destacada de planeta */}
+                        <div className="definition">
+                            Ejemplo:
+                            <br />
+                            Un planeta 🌍 es un cuerpo celeste que orbita alrededor de una estrella,
+                            tiene suficiente masa para que su gravedad le dé una forma esférica y
+                            ha limpiado su órbita de otros objetos.
+                            <br />
+                        </div>
 
-                        <div className="tools-container">
+                        <div className="options-container">
                             {tools.map((tool) => (
-                                <div
-                                    key={tool.id}
-                                    className={`tool-item ${tool.color}`}
-                                    draggable
-                                    onDragStart={(e) => handleDragStart(e, tool)}
-                                >
-                                    {tool.label}
+                                <div key={tool.id} className={`option-box ${summary.herramientas.includes(tool.id) ? "active" : ""}`}>
+                                    <div className="option-header">
+                                        <span className="option-title">{tool.label}</span>
+                                        <label className="switch">
+                                            <input
+                                                type="checkbox"
+                                                checked={summary.herramientas.includes(tool.id)}
+                                                onChange={() => toggleTool(tool.id)}
+                                            />
+                                            <span className="slider"></span>
+                                        </label>
+                                    </div>
+
+                                    {/* Ejemplo visual según la herramienta seleccionada */}
+                                    <div className="example-container">
+                                        <label className="example-title">Ejemplo:</label>
+                                        {tool.id === "ejemplo" && (
+                                            <ul>
+                                                <li>🪐 Un planeta es como una bola gigante que gira alrededor de una estrella.</li>
+                                                <li>🌍 Por ejemplo, la Tierra es un planeta que gira alrededor del Sol.</li>
+                                            </ul>
+                                        )}
+
+                                        {tool.id === "bullet" && (
+                                            <ul>
+                                                <li>🪐 Cuerpo celeste.</li>
+                                                <li>💫 Órbita alrededor de una estrella.</li>
+                                                <li>🌍 Forma esférica.</li>
+                                                <li>🛰️ Limpia su órbita de otros objetos.</li>
+                                            </ul>
+                                        )}
+
+                                        {tool.id === "textocorto" && (
+                                            <ul>
+                                                <li>🪐 Un planeta es un cuerpo celeste que gira alrededor de una estrella y tiene forma esférica.</li>
+                                            </ul>
+                                        )}
+
+                                        {tool.id === "frasescortas" && (
+                                            <ul>
+                                                <li>🪐 Es una bola en el espacio.</li>
+                                                <li>💫 Gira alrededor de una estrella.</li>
+                                                <li>🌍 Tiene forma redonda.</li>
+                                            </ul>
+                                        )}
+
+                                        {tool.id === "mostrarPorPartes" && (
+                                            <ul>                                            📚 <strong>Parte 1:</strong> Un planeta es un cuerpo celeste.
+                                                <br />
+                                                📚 <strong>Parte 2:</strong> Gira alrededor de una estrella.
+                                                <br />
+                                                📚 <strong>Parte 3:</strong> Tiene forma esférica.
+                                                <br />
+                                                📚 <strong>Parte 4:</strong> Limpia su órbita de otros objetos.
+                                            </ul>
+                                        )}
+                                    </div>
                                 </div>
                             ))}
                         </div>
 
-                        {/* Mochila para soltar herramientas */}
-                        <div
-                            className="drop-zone"
-                            onDragOver={(e) => e.preventDefault()}
-                            onDrop={handleDrop}
-                        >
-                            <h3>Arrastra aquí las herramientas elegidas</h3>
-                            <div className="selected-tools">
-                                {selectedTools.length > 0 ? (
-                                    selectedTools.map((toolId) => {
-                                        const tool = tools.find((t) => t.id === toolId);
-                                        return (
-
-                                            <div
-                                                key={toolId}
-                                                className={`selected-tool ${tool.color}`}
-                                                onClick={() => handleRemoveTool(toolId)}
-                                            >
-                                                {tool.label} ❌
-                                            </div>
-                                        );
-                                    })
-                                ) : (
-                                    <p>No has seleccionado ninguna herramienta aún.</p>
-                                )}
-                            </div>
-                        </div>
                     </div>
                 );
+
             case 5:
                 return (
                     <div className="question-page">
-                        {/* Contenido totalmente centrado */}
                         <div className="final-content">
                             <h2 className="final-title">
-                                ¡Has completado tu preparación para la aventura! 🎉
+                                ¡OlivIA está lista para ayudarte! 🚀
                             </h2>
                             <p className="final-text">
-                                Tu experiencia ha sido configurada a medida y has creado un compañero virtual único, listo para asistirte en tu viaje.
-                            </p>
+                                Gracias por contarme cómo puedo ayudarte mejor.
+                                OlivIA ya está preparada para explicarte lo que necesites, cuando lo necesites.</p>
 
-                            {/* Contenedor para centrar el robot */}
+                            {generateSummary()} {/* RESUMEN COMPLETO */}
+
                             <div className="robot-container">
                                 <img src={robotLogoCuerpo} alt="Compañero Virtual" className="robot-img" />
                             </div>
@@ -358,9 +600,8 @@ export default function Questionario({ onComplete }) {
                             <h3 className="final-question">¿Quieres comenzar la aventura?</h3>
 
                             <div className="button-group">
-
-                                <button className="final-btn gray" onClick={() => setPage(2)}>
-                                    🔄 Revisar opciones
+                                <button className="final-btn gray" onClick={() => setPage(1)}>
+                                    🔄 No, quiero cambiar algo
                                 </button>
                                 <button className="final-btn green" onClick={onComplete}>
                                     ✔️ Sí, estoy listo

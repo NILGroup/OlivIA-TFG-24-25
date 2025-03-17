@@ -580,6 +580,7 @@ body {
 /* Estilos del textarea */
 .custom-textarea {
   width: 80%;
+  margin-bottom: 40px;
   max-width: 400px;
   height: 80px;
   padding: 10px;
@@ -590,6 +591,7 @@ body {
   resize: none;
   text-align: center;
   font-weight: bold;
+  color: black;
   transition: border-color 0.3s ease-in-out;
 }
 
@@ -601,7 +603,11 @@ body {
 
 .accept-btn {
   margin-top: 10px;
-  padding: 8px 15px;
+  /* Más margen superior para separación */
+  padding: 10px 20px;
+  /* Ajustar tamaño del botón */
+  width: 150px;
+  /* Tamaño fijo para que quede uniforme */
   font-size: 16px;
   font-weight: bold;
   color: white;
@@ -609,11 +615,37 @@ body {
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   transition: 0.3s;
 }
 
 .accept-btn:hover {
-  background-color: #0056b3;
+  background-color: #0b0eb4;
+}
+
+/* Estilo del botón cuando se haya guardado correctamente */
+.accept-btn.saved {
+  background-color: #1CA655;
+  /* Verde */
+  cursor: default;
+  pointer-events: none;
+  content: "✅ Guardado";
+  color: white;
+  /* Evita que se pueda volver a pulsar */
+}
+
+.other-input-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* Centra en horizontal */
+  justify-content: center;
+  /* Centra en vertical */
+  width: 100%;
+  gap: 15px;
+  /* Espacio entre elementos */
 }
 
 
@@ -719,59 +751,209 @@ body {
   background-color: #d1d1d1;
 }
 
+/* Definición destacada en formato de cuadro */
+.definition {
+  background: #e0f7fa;
+  border: 3px solid #00acc1;
+  border-radius: 15px;
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto 30px;
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  color: #000;
+  width: 100%;
+}
 
-/*OPCION 6*/
+/* Contenedor de opciones en dos columnas */
+.options-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  /* 2 columnas fijas */
+  /* 2 columnas automáticas */
+  gap: 30px;
+  width: 60%;
+  /* Espacio entre opciones */
+  justify-content: center;
+  margin: 0 auto;
+}
+
+/* Header con toggle */
+.option-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: bold;
+  font-size: 20px;
+
+}
+
+/* Si hay una opción impar, se centrará */
+.options-container>.option-box:last-child:nth-child(odd) {
+  grid-column: span 2;
+  /* La última opción se expande en 2 columnas */
+  justify-self: center;
+  width: 70%;
+  /* Reducir el ancho para que se vea más proporcionado */
+
+}
+
+/* Estilo para cada opción */
+.option-box {
+  background: #fff;
+  border: 3px solid #00796b;
+  padding: 20px;
+  color: black;
+  border-radius: 15px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+
+}
+
+/* Checkbox con mayor tamaño */
+.option-label {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-size: 22px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* Checkbox más grande */
+.option-label input {
+  transform: scale(2);
+  /* Checkbox grande */
+  cursor: pointer;
+}
+
+/* Ejemplo visual */
+.example-container {
+  background: #e0f7fa;
+  padding: 10px 15px;
+  border-radius: 8px;
+  text-align: left;
+  border: 2px solid #00acc1;
+  margin-top: 10px;
+}
+
+.example-title {
+  font-weight: bold;
+  color: #19acb7;
+  margin-bottom: 5px;
+  text-align: left;
+  font-size: 18px;
+  margin-bottom: 60px;
+}
+
+
+/* Ejemplo: Estilo de texto dentro del ejemplo */
+.example-container p,
+.example-container ul {
+  color: #000;
+  /* Texto completamente negro */
+  font-weight: bold;
+  opacity: 1;
+  /* Asegura que el texto sea completamente visible */
+}
+
+/* Listas dentro del ejemplo */
+.example-container ul {
+  padding-left: 20px;
+  /* Indentación en listas */
+}
+
+.example-container ul li {
+  margin-bottom: 5px;
+}
+
+
+
+/*OPCION 2*/
+.toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f0f0f0;
+  border: 2px solid #3498db;
+  border-radius: 20px;
+  padding: 15px 25px;
+  /* Aumentar el tamaño */
+  cursor: pointer;
+  width: 100%;
+  max-width: 350px;
+  /* Más ancho */
+  margin-bottom: 15px;
+  /* Mayor separación */
+  font-size: 20px;
+  /* Texto más grande */
+  transition: background 0.3s;
+}
+
+.toggle-btn.active {
+  background: #3498db;
+  color: #fff;
+}
+
+/* OPCIÓN 6 */
 /* Contenedor de todas las opciones */
 .toggle-options-container {
-  display: flex;
   flex-direction: column;
-  gap: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  /* Mayor separación entre opciones */
 }
 
-/* Ajustar los bullets (más pequeños y alineados a la izquierda) */
+/* Ajustar los bullets */
 .bullet {
-  font-size: 12px;
-  /* Tamaño más pequeño */
+  font-size: 16px;
+  /* Más grande */
   color: black;
-  /* Color negro */
-  margin-right: 10px;
+  margin-right: 15px;
   flex-shrink: 0;
-  /* Evita que se reduzca en tamaño */
 }
 
-/* Ajustar alineación dentro de la opción */
+/* Corregir el ancho del toggle de "Otra opción" */
 .toggle-option {
   display: flex;
   align-items: center;
   justify-content: space-between;
   background: white;
-  padding: 10px 15px;
-  border-radius: 10px;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-  margin-bottom: 10px;
+  padding: 15px 20px;
+  /* Más grande */
+  border-radius: 15px;
+  /* Bordes más redondeados */
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
   width: 100%;
-  margin-bottom: 30px;
-  /* MÁS SEPARADO */
-
-  max-width: 500px;
+  max-width: 600px;
+  /* Mayor ancho */
   color: black;
-
+  margin-bottom: 15px;
+  /* Mayor separación */
+  font-size: 20px;
+  /* Texto más grande */
+  border: 3px solid transparent;
+  /* Borde por defecto */
 }
 
-/* Texto de la opción */
-.toggle-label {
-  flex-grow: 1;
-  text-align: left;
-  /* Alinear el texto a la izquierda */
-  font-weight: bold;
+/* Subrayado verde cuando está activo */
+.toggle-option.active {
+  border: 3px solid #1CA655;
+  /* Borde verde */
+  background-color: #E6F4EA;
+  /* Fondo verde claro */
 }
 
 /* Estilo del switch */
 .switch {
   position: relative;
   display: inline-block;
-  width: 60px;
-  height: 30px;
+  width: 70px;
+  height: 34px;
 }
 
 /* Ocultar el checkbox original */
@@ -787,8 +969,8 @@ body {
   cursor: pointer;
   inset: 0;
   background-color: #e74c3c;
-  /* Rojo por defecto (NO) */
-  border-radius: 15px;
+  /* Rojo por defecto */
+  border-radius: 17px;
   transition: 0.4s;
 }
 
@@ -796,8 +978,8 @@ body {
 .slider:before {
   content: "No";
   position: absolute;
-  height: 26px;
-  width: 26px;
+  height: 30px;
+  width: 30px;
   left: 2px;
   bottom: 2px;
   background-color: white;
@@ -805,7 +987,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: bold;
   color: red;
   transition: 0.4s;
@@ -813,16 +995,15 @@ body {
 
 /* Cuando el switch está activo (Sí) */
 .switch input:checked+.slider {
-  background-color: #2ecc71;
+  background-color: #1CA655;
   /* Verde */
 }
 
 .switch input:checked+.slider:before {
   content: "Sí";
-  transform: translateX(30px);
+  transform: translateX(35px);
   color: green;
 }
-
 
 /* 🎚️ Separación entre los botones de velocidad */
 .speed-controls {
@@ -1379,7 +1560,6 @@ body {
 
 
 /*ESCUCHAR TEXTO GENERADO*/
-
 .icon-container {
   display: flex;
   justify-content: flex-end;
@@ -1405,4 +1585,87 @@ body {
 .audio-btn:hover,
 .pause-btn:hover {
   background: #e0e0e0;
+}
+
+
+/* RESUMEN DE FIN DE PÁGINA*/
+/* Contenedor principal del resumen */
+.summary-box {
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  background-color: #d7e6ff;
+  border: 3px solid #000;
+  /* Borde negro */
+  border-radius: 15px;
+  padding: 20px 30px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+
+}
+
+/* Títulos dentro del resumen */
+.summary-box h3 {
+  font-size: 30px;
+  color: #000;
+  /* Texto en negro */
+  font-weight: bold;
+  margin-bottom: 15px;
+  /* Mayor espacio después de cada título */
+  text-transform: uppercase;
+  margin-bottom: 30px;
+}
+
+.summary-box h4 {
+  margin-bottom: 30px;
+  margin-top: 30px;
+
+  color: #000;
+  font-size: 20px;
+  /* Texto en negro */
+  font-weight: bold;
+  margin-bottom: 15px;
+  /* Mayor espacio después de cada título */
+  text-transform: uppercase;
+}
+
+/* Párrafos del resumen (nombre)*/
+.summary-box p {
+  color: #000;
+  font-size: 20px;
+  /* Texto en negro */
+  font-weight: bold;
+}
+
+/* Estilo de las burbujas de opciones elegidas */
+.summary-box ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  /* Espacio entre cada burbuja */
+  justify-content: center;
+  margin-top: 10px;
+  /* Espacio extra antes de las burbujas */
+}
+
+.summary-box li {
+  background-color: #000366;
+  /* Ahora en negro */
+  color: #ffffff;
+  /* Texto en blanco */
+  padding: 8px 20px;
+  border-radius: 20px;
+  font-weight: bold;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+  display: inline-block;
+  transition: transform 0.2s ease-in-out;
+}
+
+/* Efecto hover */
+.summary-box li:hover {
+  transform: scale(1.05);
+  background-color: #333;
+  /* Negro suave en hover */
 }
