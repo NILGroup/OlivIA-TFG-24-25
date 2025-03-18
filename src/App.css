@@ -1313,19 +1313,33 @@ body {
   border-color: #fd2e17;
 }
 
+.help-btn.red:hover {
+  background-color: #fd2e17;
+  color: white;
+
+}
+
 .help-btn.blue {
   background-color: #63aeeb;
   border-color: #1d4dd3;
 }
 
+.help-btn.blue:hover {
+  background-color: #05609c;
+  color: white;
+
+}
 
 .help-btn.green {
   background-color: #6bc06e;
   border-color: #059c16;
+
 }
 
 .help-btn.green:hover {
   background-color: #059c16;
+  color: white;
+
 
 }
 

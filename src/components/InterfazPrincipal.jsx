@@ -30,6 +30,7 @@ export default function InterfazPrincipal() {
     // Método para manejar el toggle del cuadro de texto de sinónimos
     const toggleSynonymInput = () => {
         setShowTextInput(!showTextInput);
+        setUnknownWords("");
     };
 
     // Método para manejar la opción de "Responder en lenguaje más sencillo"
@@ -56,6 +57,15 @@ export default function InterfazPrincipal() {
         setShowTextInput(false);             // Ocultar el cuadro de sinónimos
     };
 
+    // Función para obtener la última respuesta generada en el flujo del chat
+    const getLastAIResponse = () => {
+        const lastAIMessage = chatFlow
+            .slice()
+            .reverse()
+            .find(entry => entry.type === "ai");
+
+        return lastAIMessage ? lastAIMessage.content : "";
+    };
 
 
     // Estado para controlar la visibilidad de las opciones adicionales
@@ -65,16 +75,21 @@ export default function InterfazPrincipal() {
 
     // Método para reformular toda la respuesta
     const requestSimplifiedResponse = () => {
-        const simplifiedPrompt = `"${response} de la manera más sencilla y corta posible"`;
-        sendCustomPrompt(simplifiedPrompt);
+        const lastResponse = getLastAIResponse();  //   Obtener la última respuesta del flujo del chat
+        if (!lastResponse.trim()) return;
+
+        const simplifiedPrompt = `"${lastResponse}"`;
+        sendCustomPrompt(simplifiedPrompt, "Reformular de la manera más sencilla y corta posible");
+
         setShowSimplificationOptions(false); // Ocultar opciones tras la acción
     };
 
-    // Método para solicitar sinónimos del Diccionario Fácil
+
+    // Método para solicitar sinónimos 
     const requestSynonyms = (words) => {
         if (words.trim()) {
-            const synonymPrompt = `Dame un sinónimo y una muy corta y sencilla explicación de ${words}`;
-            sendCustomPrompt(synonymPrompt);
+            const synonymPrompt = `${words}`;
+            sendCustomPrompt(synonymPrompt, "Dame un sinónimo y una definición corta y sencilla de ");
             setShowTextInput(false);  // Ocultar el cuadro de texto
         } else {
             alert("Por favor, escribe algunas palabras para buscar sinónimos.");
@@ -124,20 +139,26 @@ export default function InterfazPrincipal() {
     };
 
     // Función para leer texto en voz alta
-    const speakText = (text) => {
+    const speakText = () => {
+        const lastResponse = getLastAIResponse();
+        if (!lastResponse.trim()) {
+            alert("No hay texto para reproducir.");
+            return;
+        }
+
         if (!window.speechSynthesis) {
             alert("Tu navegador no soporta la síntesis de voz.");
             return;
         }
+        window.speechSynthesis.cancel();
 
-        const utterance = new SpeechSynthesisUtterance(text);
+        const utterance = new SpeechSynthesisUtterance(lastResponse);
         utterance.lang = 'es-ES';
         utterance.rate = 1;
         utterance.pitch = 1;
 
         window.speechSynthesis.speak(utterance);
     };
-
     const pauseSpeech = () => {
         if (window.speechSynthesis.speaking) {
             window.speechSynthesis.pause();
@@ -159,23 +180,25 @@ export default function InterfazPrincipal() {
 
         setShowUsefulQuestion(false);
         setShowConfirmationButton(false);
-        setResponse("");
         setLoading(true);
         setShowChat(true);
         setShowHelpOptions(false);
 
-        // Generar el prompt final usando la opción seleccionada + lo que escribió el usuario
         const finalPrompt = selectedOption?.id && selectedOption.id <= 6
-
             ? `${selectedOption.text} ${prompt}${selectedOption.needsQuestionMark ? "?" : ""}`
             : prompt;
+
+        // Añadir la pregunta al flujo del chat
+        setChatFlow((prev) => [...prev, { type: "user", content: finalPrompt }]);
+        // Mostrar mensaje temporal de "⌛ Cargando..."
+        setChatFlow((prev) => [...prev, { type: "loading", content: "⌛ Cargando..." }]);
 
         try {
             const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer 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`,
+                    "Authorization": "Bearer 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",
                 },
                 body: JSON.stringify({
                     model: "deepseek/deepseek-r1:free",
@@ -184,114 +207,102 @@ export default function InterfazPrincipal() {
             });
 
             const data = await res.json();
+            //     Eliminar el mensaje de "⌛ Cargando..."
+            setChatFlow((prev) => prev.filter(entry => entry.type !== "loading"));
 
-            setResponse(data.choices?.[0]?.message?.content || "Sin respuesta :(");
+            // Añadir la respuesta al flujo del chat
+            setChatFlow((prev) => [
+                ...prev,
+                { type: "ai", content: data.choices?.[0]?.message?.content || "Sin respuesta :(" }
+            ]);
 
             setShowHelpOptions(true);
         } catch (error) {
             console.error("Error obteniendo respuesta:", error);
-            setResponse("Error al obtener la respuesta");
+
+            // Eliminar el mensaje de "⌛ Cargando..." en caso de error
+            setChatFlow((prev) => prev.filter(entry => entry.type !== "loading"));
+
+            setChatFlow((prev) => [
+                ...prev,
+                { type: "ai", content: "Error al obtener la respuesta" }
+            ]);
+
         }
         setLoading(false);
     };
 
-    // Función específica para prompts personalizados (como reformulación o sinónimos)
-    const sendCustomPrompt = async (customPrompt) => {
+    const sendCustomPrompt = async (customPrompt, context = "") => {
         if (!customPrompt.trim()) return;
 
-        resetHelpOptions(); // Se asegura que se limpien las opciones adicionales
-
-        setResponse("");
+        resetHelpOptions();
         setLoading(true);
         setShowChat(true);
 
+        const fullPrompt = context
+            ? `${context}: ${customPrompt}`
+            : customPrompt;
+
+        setChatFlow((prev) => [...prev, { type: "user", content: fullPrompt }]);
+
+        //  Mostrar mensaje temporal de "⌛ Cargando..."
+        setChatFlow((prev) => [...prev, { type: "loading", content: "⌛ Cargando..." }]);
+
         try {
             const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer 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`,
+                    "Authorization": "Bearer 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",
                 },
                 body: JSON.stringify({
                     model: "deepseek/deepseek-r1:free",
-                    messages: [{ role: "user", content: customPrompt }],
+                    messages: [{ role: "user", content: fullPrompt }],
                 }),
             });
 
             const data = await res.json();
-            setResponse(data.choices?.[0]?.message?.content || "Sin respuesta :(");
-            setShowHelpOptions(true);
 
+            //     Eliminar el mensaje de "⌛ Cargando..."
+            setChatFlow((prev) => prev.filter(entry => entry.type !== "loading"));
+
+            //  Añadir la respuesta generada al flujo del chat
+            setChatFlow((prev) => [
+                ...prev,
+                { type: "ai", content: data.choices?.[0]?.message?.content || "Sin respuesta :(" }
+            ]);
+
+            setShowHelpOptions(true);
         } catch (error) {
             console.error("Error obteniendo respuesta:", error);
-            setResponse("Error al obtener la respuesta");
+
+            //     Eliminar el mensaje de "⌛ Cargando..." en caso de error
+            setChatFlow((prev) => prev.filter(entry => entry.type !== "loading"));
+
+            setChatFlow((prev) => [
+                ...prev,
+                { type: "ai", content: "Error al obtener la respuesta." }
+            ]);
         }
+
         setLoading(false);
     };
 
 
-    // BOTON PREGUNTA POST GENERAR RESPUESTA - Pedir un resumen de la respuesta generada
+    // Solicitar un resumen usando sendCustomPrompt
     const requestSummary = async () => {
-        if (!response.trim()) return;
-        setRequestingSummary(true);
-        setLoading(true);
+        const lastResponse = getLastAIResponse();  //   Obtener la última respuesta del flujo del chat
+        if (!lastResponse.trim()) return;
 
-        try {
-            const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer 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`,
-                },
-                body: JSON.stringify({
-                    model: "deepseek/deepseek-r1:free",
-                    messages: [{ role: "user", content: `Resumir el siguiente texto: ${response}` }],
-                }),
-            });
-
-            const data = await res.json();
-            setResponse(data.choices?.[0]?.message?.content || "No se pudo generar el resumen.");
-            setShowHelpOptions(true);
-        } catch (error) {
-            console.error("Error obteniendo resumen:", error);
-            setResponse("Error al obtener el resumen.");
-        }
-
-        setRequestingSummary(false);
-        setLoading(false);
+        await sendCustomPrompt(lastResponse, "Resumir el siguiente texto");
     };
 
-    // BOTON PREGUNTA POST GENERAR RESPUESTA - Pedir un ejemplo basado en la respuesta generada
+    // Solicitar un ejemplo usando sendCustomPrompt
     const requestExample = async () => {
-        if (!response.trim()) return;
-        setRequestingExample(true);
-        setShowHelpOptions(false);
-        setLoading(true);
+        const lastResponse = getLastAIResponse();  //   Obtener la última respuesta del flujo del chat
+        if (!lastResponse.trim()) return;
 
-
-        try {
-            const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer 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`,
-                },
-                body: JSON.stringify({
-                    model: "deepseek/deepseek-r1:free",
-                    messages: [{ role: "user", content: `Dame un ejemplo de ${response}` }],
-                }),
-            });
-
-            const data = await res.json();
-            setResponse(data.choices?.[0]?.message?.content || "No se pudo generar un ejemplo.");
-            setShowHelpOptions(true);
-        } catch (error) {
-            console.error("Error obteniendo ejemplo:", error);
-            setResponse("Error al obtener el ejemplo.");
-        }
-
-        setRequestingExample(false);
-        setLoading(false);
+        await sendCustomPrompt(lastResponse, "Dame un ejemplo de");
     };
 
     // BOTON PREGUNTA POST GENERAR RESPUESTA - Guardar chat en historial y empezar de nuevo
@@ -311,6 +322,8 @@ export default function InterfazPrincipal() {
         setShowInitialOptions(false); // Cerrar opciones de ayuda
         setShowChat(false); // Volver a la pantalla principal
         setShowHistory(true); // Abrir el historial automáticamente
+
+        setChatFlow([]);
     };
 
 
@@ -380,7 +393,6 @@ export default function InterfazPrincipal() {
                         </button>
                     </div>
 
-                    {/* BLOQUE QUE SE ACTUALIZA DINÁMICAMENTE */}
                     <div className={`question-container ${selectedOption ? selectedOption.color : ""}`}>
                         <h3 className="question-title">{selectedOption ? selectedOption.text : "Formula una pregunta"}</h3>
                         <input
@@ -397,9 +409,7 @@ export default function InterfazPrincipal() {
                 </>
             ) : (
                 <div className="chat-wrapper">
-                    <div className="chat-container user-container">
-                        <div className="chat-message user-message">{selectedOption?.id && selectedOption.id <= 6 ? `${selectedOption.text} ${prompt}${selectedOption.needsQuestionMark ? "?" : ""}` : prompt}</div>
-                    </div>
+
                     {requestingSummary && (
                         <div className="chat-container user-container">
                             <div className="chat-message user-message">Dame un resumen</div>
@@ -412,54 +422,51 @@ export default function InterfazPrincipal() {
                         </div>
                     )}
 
-                    <div className="chat-container ai-container">
-                        <div className="chat-message ai-message">
-                            {loading ? "Cargando respuesta..." : <ReactMarkdown>{response}</ReactMarkdown>}
-                        </div>
-                    </div>
 
-                    {chatFlow.map((entry, index) => (
-                        <div
-                            key={index}
-                            className={`chat-container ${entry.type === "user" ? "user-container" : "ai-container"}`}
-                        >
-                            <div className={`chat-message ${entry.type === "user" ? "user-message" : "ai-message"}`}>
-                                <ReactMarkdown>{entry.content}</ReactMarkdown>
+                    <div className="chat-wrapper">
+                        {chatFlow.map((entry, index) => (
+                            <div
+                                key={index}
+                                className={`chat-container ${entry.type === "user" ? "user-container" : "ai-container"}`}
+                            >
+                                <div className={`chat-message ${entry.type === "user" ? "user-message" : "ai-message"}`}>
+                                    <ReactMarkdown>{entry.content}</ReactMarkdown>
 
-                                {/* Iconos de audio y pausa posicionados a la derecha */}
-                                {entry.type === "ai" && (
-                                    <div className="icon-container">
-                                        <button
-                                            className="audio-btn"
-                                            onClick={() => speakText(entry.content)}
-                                            aria-label="Reproducir en voz alta"
-                                            title="Reproducir en voz alta"
-                                        >
-                                            🔊
-                                        </button>
+                                    {entry.type === "ai" && (
+                                        <div className="icon-container">
+                                            <button
+                                                className="audio-btn"
+                                                onClick={() => speakText(entry.content)}
+                                                aria-label="Reproducir en voz alta"
+                                                title="Reproducir en voz alta"
+                                            >
+                                                🔊
+                                            </button>
 
-                                        <button
-                                            className="pause-btn"
-                                            onClick={pauseSpeech}
-                                            aria-label="Pausar reproducción"
-                                            title="Pausar reproducción"
-                                        >
-                                            ⏸️
-                                        </button>
+                                            <button
+                                                className="pause-btn"
+                                                onClick={pauseSpeech}
+                                                aria-label="Pausar reproducción"
+                                                title="Pausar reproducción"
+                                            >
+                                                ⏸️
+                                            </button>
 
-                                        <button
-                                            className="resume-btn"
-                                            onClick={resumeSpeech}
-                                            aria-label="Reanudar reproducción"
-                                            title="Reanudar reproducción"
-                                        >
-                                            ▶️
-                                        </button>
-                                    </div>
-                                )}
+                                            <button
+                                                className="resume-btn"
+                                                onClick={resumeSpeech}
+                                                aria-label="Reanudar reproducción"
+                                                title="Reanudar reproducción"
+                                            >
+                                                ▶️
+                                            </button>
+                                        </div>
+
+                                    )}
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
 
 
                     {showHelpOptions && !requestingSummary && (
