@@ -1,7 +1,51 @@
+/* Tamaño de H1 entre 32-40px */
+h1,
+.title {
+  font-size: 36px;
+  /* Se ajusta dentro del rango pedido */
+  font-weight: bold;
+}
+
+/* Tamaño de H2 entre 24-32px */
+h2 {
+  font-size: 28px;
+  /* Se ajusta dentro del rango pedido */
+  font-weight: bold;
+}
+
+/* Tamaño de H3 entre 20-24px */
+h3 {
+  font-size: 22px;
+  /* Se ajusta dentro del rango pedido */
+  font-weight: bold;
+}
+
+/* Tamaño de H4 entre 18-20px */
+h4 {
+  font-size: 18px;
+  /* Se mantiene correcto */
+  font-weight: bold;
+}
+
+/* Tamaño de los párrafos entre 16-18px */
+p {
+  font-size: 16px;
+  /* Se ajusta dentro del rango pedido */
+  line-height: 1.5;
+}
+
+/* Cuadro de respuesta para tener coherencia visual */
+.response-box {
+  font-size: 16px;
+  /* Ajustado para cumplir el estándar */
+}
+
+
 /* Fondo de la aplicación web*/
 body {
   font-family: Verdana, Geneva, Tahoma, sans-serif;
   background-color: #f5f9fa;
+  /* Zoom al 50% */
   margin: 0;
   display: flex;
   flex-direction: column;
@@ -1298,6 +1342,7 @@ body {
 
 /* Estilo de los botones */
 .help-btn {
+  margin-top: 10px;
   padding: 14px;
   font-size: 14px;
   font-weight: bold;
@@ -1547,7 +1592,7 @@ body {
   /* Borde azul oscuro */
   border-radius: 15px;
   padding: 10px 15px;
-  margin-bottom: 8px;
+  margin-bottom: 20px;
   color: #000;
   cursor: pointer;
   transition: background-color 0.3s ease;
@@ -1696,11 +1741,11 @@ body {
 
 /* Cuadro de texto para palabras desconocidas */
 .textarea-synonyms {
-  width: 80%;
+  width: 300%;
   /* Se mantiene más compacto */
-  max-width: 400px;
+  max-width: 900px;
   /* Limita el ancho */
-  height: 80px;
+  height: 90px;
   padding: 10px;
   margin-top: 20px;
   margin-bottom: 10px;

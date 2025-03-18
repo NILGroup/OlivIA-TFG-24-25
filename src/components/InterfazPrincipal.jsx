@@ -113,6 +113,8 @@ export default function InterfazPrincipal() {
     // Estado para almacenar el historial de chats
     const [chatHistory, setChatHistory] = useState([]);
     const [showHistory, setShowHistory] = useState(false); // Mostrar/ocultar historial
+    const [activeChat, setActiveChat] = useState(null); // Almacena el chat activo
+
 
 
     /** =================================
@@ -188,10 +190,12 @@ export default function InterfazPrincipal() {
             ? `${selectedOption.text} ${prompt}${selectedOption.needsQuestionMark ? "?" : ""}`
             : prompt;
 
-        // Añadir la pregunta al flujo del chat
-        setChatFlow((prev) => [...prev, { type: "user", content: finalPrompt }]);
-        // Mostrar mensaje temporal de "⌛ Cargando..."
-        setChatFlow((prev) => [...prev, { type: "loading", content: "⌛ Cargando..." }]);
+        setChatFlow((prev) => [
+            ...prev,
+            { type: "user", content: finalPrompt },
+            { type: "loading", content: "⌛ Cargando..." }
+        ]);
+
 
         try {
             const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -309,20 +313,20 @@ export default function InterfazPrincipal() {
     const toggleHistory = () => setShowHistory(!showHistory);
 
     const saveChatToHistory = () => {
+        if (chatFlow.length === 0) return;
+
         const chatEntry = {
-            prompt: selectedOption?.id && selectedOption.id <= 6
-                ? `${selectedOption.text} ${prompt}${selectedOption.needsQuestionMark ? "?" : ""}`
-                : prompt,
-            response: response,
+            title: chatFlow[0]?.content || "Chat sin título",  // Primer mensaje como título
+            flow: [...chatFlow],  // Guarda todo el flujo del chat
             timestamp: new Date().toLocaleString(),
-            isNew: true // Marcar el mensaje como "nuevo"
+            isNew: true
         };
 
         setChatHistory([...chatHistory.map(entry => ({ ...entry, isNew: false })), chatEntry]);
-        setShowInitialOptions(false); // Cerrar opciones de ayuda
-        setShowChat(false); // Volver a la pantalla principal
-        setShowHistory(true); // Abrir el historial automáticamente
-
+        setShowUsefulQuestion(false);
+        setShowInitialOptions(false);
+        setShowChat(false);
+        setShowHistory(true);
         setChatFlow([]);
     };
 
@@ -355,20 +359,56 @@ export default function InterfazPrincipal() {
                             <li
                                 key={index}
                                 className={`chat-bubble ${entry.isNew ? "new-entry" : ""}`}
-                                onClick={() => alert(`Pregunta: ${entry.prompt}\n\nRespuesta: ${entry.response}`)}
                             >
                                 <div className="chat-preview">
-                                    {entry.prompt.substring(0, 40)}
+                                    {entry.title || "Chat sin título"}
                                 </div>
+
                                 <div className="chat-timestamp">
                                     <small>{entry.timestamp}</small>
                                 </div>
+                                {/* Botón para abrir o cerrar el chat */}
+                                {activeChat === entry ? (
+                                    <button
+                                        className="help-btn blue"
+                                        onClick={() => {
+                                            setActiveChat(null);  // Limpiar el chat activo
+                                            setChatFlow([]);       // Vaciar el flujo de mensajes
+                                            setShowChat(false);    // Ocultar el chat
+                                        }}
+                                    >
+                                        📁 Cerrar chat
+                                    </button>
+                                ) : (
+                                    <button
+                                        className="help-btn blue"
+                                        onClick={() => {
+                                            setActiveChat(entry);
+                                            setChatFlow([...entry.flow]); // Restaura el flujo completo del chat
+                                            setShowChat(true);
+                                        }}
+                                    >
+                                        📂 Abrir chat
+                                    </button>
+
+                                )}
                             </li>
                         ))}
                     </ul>
                 )}
             </div>
-
+            {activeChat && (
+                <div className="chat-wrapper">
+                    <div className="chat-container">
+                        <div className="chat-message user-message">
+                            {activeChat.prompt}
+                        </div>
+                        <div className="chat-message ai-message">
+                            {activeChat.response}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {!showChat ? (
                 <>
@@ -469,7 +509,7 @@ export default function InterfazPrincipal() {
                     </div>
 
 
-                    {showHelpOptions && !requestingSummary && (
+                    {showHelpOptions && !activeChat && !requestingSummary && (
                         <>
                             {/* Asegura que los botones aparecen en un nuevo contenedor debajo */}
                             <div className="chat-container">
@@ -553,7 +593,7 @@ export default function InterfazPrincipal() {
                                 <div className="chat-container">
                                     <textarea
                                         className="textarea-synonyms"
-                                        placeholder="Escribe aquí las palabras que no comprendas, separadas por comas..."
+                                        placeholder="Escribe aquí las palabras que no comprendas..."
                                         value={unknownWords}
                                         onChange={(e) => setUnknownWords(e.target.value)}
                                     ></textarea>

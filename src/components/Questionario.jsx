@@ -501,7 +501,7 @@ export default function Questionario({ onComplete }) {
                         <h2>🎭 Paso 3: Dale una personalidad a tu compañera virtual </h2>
                         <p>Teniendo en cuenta lo elegido antes</p>
                         <h3>¿Cómo quieres que te ayude tu compañero digital? </h3>
-                        Elige todas las opciones que veas necesarias:
+                        <p>Elige todas las opciones que veas necesarias:</p>
                         {/* Definición destacada de planeta */}
                         <div className="definition">
                             Ejemplo:
