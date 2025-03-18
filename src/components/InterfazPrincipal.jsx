@@ -90,7 +90,7 @@ export default function InterfazPrincipal() {
     const requestSynonyms = (words) => {
         if (words.trim()) {
             const synonymPrompt = `${words}`;
-            sendCustomPrompt(synonymPrompt, "Dame un sinónimo y una definición corta y sencilla de ");
+            sendCustomPrompt(synonymPrompt, "Dame un sinónimo y una definición corta y muy sencilla de");
             setShowTextInput(false);  // Ocultar el cuadro de texto
         } else {
             alert("Por favor, escribe algunas palabras para buscar sinónimos.");
@@ -245,7 +245,7 @@ export default function InterfazPrincipal() {
         setShowChat(true);
 
         const fullPrompt = context
-            ? `${context}: ${customPrompt}`
+            ? `${context} ${customPrompt}`
             : customPrompt;
 
         setChatFlow((prev) => [...prev, { type: "user", content: fullPrompt }]);
@@ -299,7 +299,7 @@ export default function InterfazPrincipal() {
         const lastResponse = getLastAIResponse();  //   Obtener la última respuesta del flujo del chat
         if (!lastResponse.trim()) return;
 
-        await sendCustomPrompt(lastResponse, "Resumir el siguiente texto");
+        await sendCustomPrompt(lastResponse, "Resumir el siguiente texto:");
     };
 
     // Solicitar un ejemplo usando sendCustomPrompt
@@ -307,7 +307,7 @@ export default function InterfazPrincipal() {
         const lastResponse = getLastAIResponse();  //   Obtener la última respuesta del flujo del chat
         if (!lastResponse.trim()) return;
 
-        await sendCustomPrompt(lastResponse, "Dame un ejemplo de");
+        await sendCustomPrompt(lastResponse, "Dame un ejemplo del siguiente texto:");
     };
 
     // BOTON PREGUNTA POST GENERAR RESPUESTA - Guardar chat en historial y empezar de nuevo
@@ -325,6 +325,9 @@ export default function InterfazPrincipal() {
 
         setChatHistory([...chatHistory.map(entry => ({ ...entry, isNew: false })), chatEntry]);
         setShowUsefulQuestion(false);
+        setSelectedOption(null);  // Reinicia la opción seleccionada
+        setPrompt("");            // Borra el texto del prompt
+
         setShowInitialOptions(false);
         setShowChat(false);
         setShowHistory(true);
