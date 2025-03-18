@@ -466,6 +466,12 @@ export default function InterfazPrincipal() {
                         <>
                             {/* Asegura que los botones aparecen en un nuevo contenedor debajo */}
                             <div className="chat-container">
+                                <div className="robot-bubble">
+                                    <img src={robotLogo} alt="AventurIA" className="robot-icon" />
+                                    <p>¿Quieres que te ayude a entenderlo mejor?</p>
+                                </div>
+                            </div>
+                            <div className="chat-container">
                                 <div className="help-buttons">
                                     <button
                                         className="help-btn blue"
