@@ -3,9 +3,9 @@ import "../App.css";
 import robotLogo from "../assets/AventurIA_robot_sinfondo.png";
 import robotLogoCuerpo from "../assets/AventurIA_robotCuerposinfondo.png";
 
-/** ================================
+/** =================================
  *  MAPA DE PROGRESO DE QUESTIONARIO
- *  ================================
+ *  =================================
  */
 
 const treasureMap = [
@@ -20,9 +20,9 @@ const treasureMap = [
 
 export default function Questionario({ onComplete }) {
 
-    /** ================================
+    /** ===================================
      *  ESTADOS DEL CUESTIONARIO (useState)
-     *  ================================
+     *  ===================================
      */
 
     // Control de la página actual del cuestionario
@@ -196,8 +196,6 @@ export default function Questionario({ onComplete }) {
         { id: "mostrarPorPartes", label: "📚 Mostrar información por partes", color: "orange" }  // NUEVA OPCIÓN
     ];
 
-
-
     // Estado de herramientas seleccionadas
     const [selectedTools, setSelectedTools] = useState([]);
 
@@ -220,7 +218,7 @@ export default function Questionario({ onComplete }) {
         setSelectedTools(selectedTools.filter((id) => id !== toolId));
     };
 
-    /** ================================
+    /** ===============================
     *  OPCIONES DE AYUDA (Drag & Drop)
     *  ================================
     */
@@ -253,9 +251,9 @@ export default function Questionario({ onComplete }) {
         setSelectedHelp(selectedHelp.filter((id) => id !== helpId));
     };
 
-    /** ================================
+    /** ==============================
     *  OPCIONES DE VELOCIDAD DE HABLA
-    *  ================================
+    *  ===============================
     */
 
 
@@ -274,9 +272,9 @@ export default function Questionario({ onComplete }) {
     };
 
 
-    /** ================================
+    /** ========================
      *  NAVEGACIÓN ENTRE PÁGINAS
-     *  ================================
+     *  ========================
      */
 
     // Función para avanzar a la siguiente página
@@ -295,9 +293,9 @@ export default function Questionario({ onComplete }) {
         }
     };
 
-    /** ================================
+    /* ========================
    *  CONTENIDO DE CADA PÁGINAS
-   *  ================================
+   *  =========================
    */
 
     const renderPage = () => {
