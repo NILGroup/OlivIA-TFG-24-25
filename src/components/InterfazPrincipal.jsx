@@ -9,6 +9,7 @@ export default function InterfazPrincipal() {
     *             ESTADOS
     *  =================================
     */
+    const API_KEY = import.meta.env.VITE_DEEPSEEK_API_KEY;
 
     // Controla la opción seleccionada del menú de preguntas
     const [selectedOption, setSelectedOption] = useState(null);
@@ -202,7 +203,7 @@ export default function InterfazPrincipal() {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": "Bearer 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",
+                    "Authorization": `Bearer ${API_KEY}`,
                 },
                 body: JSON.stringify({
                     model: "deepseek/deepseek-r1:free",
@@ -257,7 +258,7 @@ export default function InterfazPrincipal() {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": "Bearer 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",
+                    "Authorization": `Bearer ${API_KEY}`,
                 },
                 body: JSON.stringify({
                     model: "deepseek/deepseek-r1:free",
