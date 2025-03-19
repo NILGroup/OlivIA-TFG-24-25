@@ -2,14 +2,37 @@ import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import robotLogo from "../assets/AventurIA_robot_sinfondo.png";
 
+export default function InterfazPrincipal({ summary }) {
 
-export default function InterfazPrincipal() {
+    const API_KEY = import.meta.env.VITE_DEEPSEEK_API_KEY;
+
+    /** ================================
+    *    RESULTADO QUESTIONARIO
+    *  =================================
+    */
+
+    // Función para generar el prompt con la info del cuestionario
+    const buildPrompt = (promptText) => {
+        if (!summary) return promptText;
+
+        const personalInfo = `
+        Pero ten en cuenta estas instrucciones al responder:
+        - Mi Discapacidad: ${summary.camino.join(", ") || "Ninguna"}
+        - NO uses: ${summary.retos.join(", ") || "Ninguna"}
+        - Quiero que me generes la repsuesta usando: ${summary.herramientas.join(", ") || "Ninguna"}
+        `;
+
+        return {
+            displayPrompt: promptText,       // Lo que se mostrará en pantalla
+            apiPrompt: `Hola, respondeme a esta pregunta: ${promptText}\n${personalInfo}` // Lo que se enviará a la API
+        };
+    };
+
 
     /** ================================
     *             ESTADOS
     *  =================================
     */
-    const API_KEY = import.meta.env.VITE_DEEPSEEK_API_KEY;
 
     // Controla la opción seleccionada del menú de preguntas
     const [selectedOption, setSelectedOption] = useState(null);
@@ -187,16 +210,18 @@ export default function InterfazPrincipal() {
         setShowChat(true);
         setShowHelpOptions(false);
 
-        const finalPrompt = selectedOption?.id && selectedOption.id <= 6
-            ? `${selectedOption.text} ${prompt}${selectedOption.needsQuestionMark ? "?" : ""}`
-            : prompt;
+
+        const { displayPrompt, apiPrompt } = buildPrompt(
+            selectedOption?.id && selectedOption.id <= 6
+                ? `${selectedOption.text} ${prompt}${selectedOption.needsQuestionMark ? "?" : ""}`
+                : prompt
+        );
 
         setChatFlow((prev) => [
             ...prev,
-            { type: "user", content: finalPrompt },
+            { type: "user", content: displayPrompt },
             { type: "loading", content: "⌛ Cargando..." }
         ]);
-
 
         try {
             const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -207,7 +232,7 @@ export default function InterfazPrincipal() {
                 },
                 body: JSON.stringify({
                     model: "deepseek/deepseek-r1:free",
-                    messages: [{ role: "user", content: finalPrompt }],
+                    messages: [{ role: "user", content: apiPrompt }],
                 }),
             });
 
@@ -244,11 +269,11 @@ export default function InterfazPrincipal() {
         setLoading(true);
         setShowChat(true);
 
-        const fullPrompt = context
-            ? `${context} ${customPrompt}`
-            : customPrompt;
+        const { displayPrompt, apiPrompt } = buildPrompt(
+            context ? `${context} ${customPrompt}` : customPrompt
+        );
 
-        setChatFlow((prev) => [...prev, { type: "user", content: fullPrompt }]);
+        setChatFlow((prev) => [...prev, { type: "user", content: displayPrompt }]);
 
         //  Mostrar mensaje temporal de "⌛ Cargando..."
         setChatFlow((prev) => [...prev, { type: "loading", content: "⌛ Cargando..." }]);
@@ -262,7 +287,7 @@ export default function InterfazPrincipal() {
                 },
                 body: JSON.stringify({
                     model: "deepseek/deepseek-r1:free",
-                    messages: [{ role: "user", content: fullPrompt }],
+                    messages: [{ role: "user", content: apiPrompt }],
                 }),
             });
 
@@ -342,6 +367,7 @@ export default function InterfazPrincipal() {
      */
 
     return (
+
         <div className="app-wrapper">
             <div className="header-bar">OlivIA</div>
 
@@ -417,7 +443,9 @@ export default function InterfazPrincipal() {
             {!showChat ? (
                 <>
                     <img src={robotLogo} alt="AventurIA Logo" className="robot-logo" />
-                    <h1 className="title">¿Qué exploramos hoy?</h1>
+                    <h1 className="title">
+                        {summary?.nombre ? `Hola ${summary.nombre}, ¿Qué vamos a aprender hoy?` : "Hola ¿Qué vamos a aprender hoy?"}
+                    </h1>
 
                     {/* OPCIONES DE PREGUNTAS */}
                     <div className="box-container">

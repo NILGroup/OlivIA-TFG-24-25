@@ -601,9 +601,10 @@ export default function Questionario({ onComplete }) {
                                 <button className="final-btn gray" onClick={() => setPage(1)}>
                                     🔄 No, quiero cambiar algo
                                 </button>
-                                <button className="final-btn green" onClick={onComplete}>
+                                <button className="final-btn green" onClick={() => onComplete(summary)}>
                                     ✔️ Sí, estoy listo
                                 </button>
+
                             </div>
                         </div>
                     </div>
