@@ -226,8 +226,12 @@ export default function InterfazPrincipal({ summary }) {
 
     // Para el primer prompt
     const sendPrompt = async () => {
+
         if (!prompt.trim()) return;
 
+        window.speechSynthesis.cancel(); // Detiene cualquier lectura activa
+        setActiveSpeechId(null);         // Resetea el ID del mensaje leído
+        setSpeechState("idle");          // Estado de la voz a reposo
         resetHelpOptions(); // Se asegura que se limpien las opciones adicionales
 
         setShowUsefulQuestion(false);
@@ -288,10 +292,14 @@ export default function InterfazPrincipal({ summary }) {
 
         }
         setLoading(false);
+        setPrompt("");
     };
 
     const sendCustomPrompt = async (customPrompt, context = "", displayOverride = null) => {
         if (!customPrompt.trim()) return;
+        window.speechSynthesis.cancel(); // Detiene cualquier lectura activa
+        setActiveSpeechId(null);         // Resetea el ID del mensaje leído
+        setSpeechState("idle");          // Estado de la voz a reposo
 
         resetHelpOptions();
         setLoading(true);

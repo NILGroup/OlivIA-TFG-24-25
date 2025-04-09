@@ -1556,8 +1556,9 @@ body {
 }
 
 .chat-history-sidebar.show {
-  max-height: 500px;
+  max-height: none;
   padding: 20px 15px;
+  overflow-y: auto;
 }
 
 .chat-history-sidebar.hide {
