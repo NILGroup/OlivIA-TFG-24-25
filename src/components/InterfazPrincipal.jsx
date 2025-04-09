@@ -4,7 +4,7 @@ import robotLogo from "../assets/AventurIA_robot_sinfondo.png";
 
 export default function InterfazPrincipal({ summary }) {
 
-    const API_KEY = import.meta.env.VITE_MISTRAL_API_KEY;
+    const API_KEY = import.meta.env.VITE_GROQ_LLAMA_API_KEY;
 
     /** ================================
     *    RESULTADO QUESTIONARIO
@@ -380,17 +380,19 @@ export default function InterfazPrincipal({ summary }) {
         ]);
 
         try {
-            const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+            const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${API_KEY}`,
                 },
                 body: JSON.stringify({
-                    model: "deepseek/deepseek-r1:free",
+                    model: "meta-llama/llama-4-scout-17b-16e-instruct",
                     messages: [{ role: "user", content: apiPrompt }],
+                    temperature: 0.7
                 }),
             });
+
 
             const data = await res.json();
             //     Eliminar el mensaje de "⌛ Cargando..."
@@ -441,17 +443,19 @@ export default function InterfazPrincipal({ summary }) {
         setChatFlow((prev) => [...prev, { type: "loading", content: "⌛ Cargando..." }]);
 
         try {
-            const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+            const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${API_KEY}`,
                 },
                 body: JSON.stringify({
-                    model: "deepseek/deepseek-r1:free",
+                    model: "meta-llama/llama-4-scout-17b-16e-instruct",
                     messages: [{ role: "user", content: apiPrompt }],
+                    temperature: 0.7
                 }),
             });
+
 
             const data = await res.json();
             setChatFlow((prev) => prev.filter(entry => entry.type !== "loading"));
@@ -503,17 +507,19 @@ export default function InterfazPrincipal({ summary }) {
         const prompt = `Lee esta conversación y dime un título corto (máximo 7 palabras) que represente de qué se trata. No uses comillas, ni hagas una frase larga:\n\n${conversation}`;
 
         try {
-            const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+            const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${API_KEY}`,
                 },
                 body: JSON.stringify({
-                    model: "deepseek/deepseek-r1:free", // o el modelo que uses
+                    model: "meta-llama/llama-4-scout-17b-16e-instruct",
                     messages: [{ role: "user", content: prompt }],
+                    temperature: 0.7
                 }),
             });
+
 
             const data = await res.json();
             const aiTitle = data.choices?.[0]?.message?.content?.trim();
