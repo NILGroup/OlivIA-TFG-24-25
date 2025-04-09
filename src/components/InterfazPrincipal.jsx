@@ -265,6 +265,8 @@ export default function InterfazPrincipal({ summary }) {
             ]);
 
             setShowHelpOptions(true);
+            // await saveChatToHistory(false);
+
         } catch (error) {
             console.error("Error obteniendo respuesta:", error);
 
@@ -316,6 +318,7 @@ export default function InterfazPrincipal({ summary }) {
                 { type: "ai", content: data.choices?.[0]?.message?.content || "Sin respuesta :(" }
             ]);
             setShowHelpOptions(true);
+            // await saveChatToHistory(false);
         } catch (error) {
             console.error("Error obteniendo respuesta:", error);
             setChatFlow((prev) => prev.filter(entry => entry.type !== "loading"));
@@ -381,33 +384,46 @@ export default function InterfazPrincipal({ summary }) {
     };
 
 
-    const saveChatToHistory = async () => {
+    const saveChatToHistory = async (clearAfter = true) => {
         if (chatFlow.length === 0) return;
 
         setIsSavingChat(true);
 
         const aiGeneratedTitle = await generateTitleFromChat();
 
-        const chatEntry = {
-            title: aiGeneratedTitle,
-            flow: [...chatFlow],
-            timestamp: new Date().toLocaleString(),
-            isNew: true
-        };
+        if (activeChat) {
+            // Actualiza el historial activo
+            const updated = chatHistory.map(entry =>
+                entry === activeChat
+                    ? { ...entry, flow: [...chatFlow], timestamp: new Date().toLocaleString() }
+                    : { ...entry, isNew: false }
+            );
+            setChatHistory(updated);
+        } else {
+            // Solo si no hay historial activo, se crea uno nuevo
+            const chatEntry = {
+                title: aiGeneratedTitle,
+                flow: [...chatFlow],
+                timestamp: new Date().toLocaleString(),
+                isNew: true
+            };
+            setChatHistory([
+                ...chatHistory.map(entry => ({ ...entry, isNew: false })),
+                chatEntry
+            ]);
+        }
 
-        setChatHistory([
-            ...chatHistory.map(entry => ({ ...entry, isNew: false })),
-            chatEntry
-        ]);
+        if (clearAfter) {
+            setShowUsefulQuestion(false);
+            setSelectedOption(null);
+            setPrompt("");
+            setShowInitialOptions(false);
+            setShowChat(false);
+            setChatFlow([]);
+            setShowHistory(true);
+        }
 
-        setShowUsefulQuestion(false);
-        setSelectedOption(null);
-        setPrompt("");
-        setShowInitialOptions(false);
-        setShowChat(false);
-        setShowHistory(true);
-        setChatFlow([]);
-
+        setShowHelpOptions(true);
         setIsSavingChat(false);
     };
 
@@ -421,63 +437,77 @@ export default function InterfazPrincipal({ summary }) {
     return (
 
         <div className="app-wrapper">
-            <div className="header-bar">OlivIA</div>
+            <div className="header-bar">
+                <button
+                    className={`history-btn ${showHistory ? "open" : "closed"}`}
+                    onClick={toggleHistory}
+                >
+                    {showHistory ? "📁 Cerrar Historial" : "📂 Abrir Historial"}
+                </button>
+                OlivIA
 
-            {/* Botón para abrir/cerrar el historial */}
-            <button
-                className={`history-btn ${showHistory ? "open" : "closed"}`}
-                onClick={toggleHistory}
-            >
-                {showHistory ? "📁 Cerrar Historial" : "📂 Abrir Historial"}
-            </button>
 
-            {/* Menú lateral del historial */}
-            <div className={`chat-history-sidebar ${showHistory ? "show" : "hide"}`}>
-                {chatHistory.length === 0 ? (
-                    <p>Aún no hay chats guardados.</p>
-                ) : (
-                    <ul>
-                        {chatHistory.map((entry, index) => (
-                            <li
-                                key={index}
-                                className={`chat-bubble ${entry.isNew ? "new-entry" : ""}`}
-                            >
-                                <div className="chat-preview">
-                                    {entry.title || "Chat sin título"}
-                                </div>
 
-                                <div className="chat-timestamp">
-                                    <small>{entry.timestamp}</small>
-                                </div>
-                                {/* Botón para abrir o cerrar el chat */}
-                                {activeChat === entry ? (
-                                    <button
-                                        className="help-btn blue"
-                                        onClick={() => {
-                                            setActiveChat(null);  // Limpiar el chat activo
-                                            setChatFlow([]);       // Vaciar el flujo de mensajes
-                                            setShowChat(false);    // Ocultar el chat
-                                        }}
-                                    >
-                                        📁 Cerrar chat
-                                    </button>
-                                ) : (
-                                    <button
-                                        className="help-btn blue"
-                                        onClick={() => {
-                                            setActiveChat(entry);
-                                            setChatFlow([...entry.flow]); // Restaura el flujo completo del chat
-                                            setShowChat(true);
-                                        }}
-                                    >
-                                        📂 Abrir chat
-                                    </button>
+                {/* Menú lateral del historial */}
+                <div className={`chat-history-sidebar ${showHistory ? "show" : "hide"}`}>
+                    {chatHistory.length === 0 ? (
+                        <p>Aún no hay chats guardados.</p>
+                    ) : (
+                        <ul>
+                            {chatHistory.map((entry, index) => (
+                                <li
+                                    key={index}
+                                    className={`chat-bubble ${entry.isNew ? "new-entry" : ""}`}
+                                >
+                                    <div className="chat-preview">
+                                        {entry.title || "Chat sin título"}
+                                    </div>
 
-                                )}
-                            </li>
-                        ))}
-                    </ul>
-                )}
+                                    <div className="chat-timestamp">
+                                        <small>{entry.timestamp}</small>
+                                    </div>
+                                    {/* Botón para abrir o cerrar el chat */}
+                                    {activeChat === entry ? (
+                                        <button
+                                            className="help-btn blue"
+                                            onClick={async () => {
+                                                if (activeChat) {
+                                                    // Guarda los cambios antes de cerrar
+                                                    const updated = chatHistory.map(entry =>
+                                                        entry === activeChat
+                                                            ? { ...entry, flow: [...chatFlow], timestamp: new Date().toLocaleString() }
+                                                            : entry
+                                                    );
+                                                    setChatHistory(updated);
+                                                }
+
+                                                setActiveChat(null);
+                                                setChatFlow([]);
+                                                setShowChat(false);
+                                            }}
+                                        >
+                                            📁 Cerrar chat
+                                        </button>
+
+                                    ) : (
+                                        <button
+                                            className="help-btn blue"
+                                            onClick={() => {
+                                                setActiveChat(entry);
+                                                setChatFlow([...entry.flow]); // Restaura el flujo completo del chat
+                                                setShowChat(true);
+                                                setShowHelpOptions(true);
+                                            }}
+                                        >
+                                            📂 Abrir chat
+                                        </button>
+
+                                    )}
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
             </div>
             {activeChat && (
                 <div className="chat-wrapper">
@@ -593,7 +623,7 @@ export default function InterfazPrincipal({ summary }) {
                     </div>
 
 
-                    {showHelpOptions && !activeChat && !requestingSummary && (
+                    {showHelpOptions && !requestingSummary && (
                         <>
                             {/* Asegura que los botones aparecen en un nuevo contenedor debajo */}
                             <div className="chat-container">

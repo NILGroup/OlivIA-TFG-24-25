@@ -1512,76 +1512,57 @@ body {
 /*HISTORIAL*/
 /* Botón del historial - Ahora forma parte de la barra superior */
 .history-btn {
-  position: fixed;
-  top: 0;
-  /* Pegado arriba */
-  left: 0;
-  /* Pegado a la izquierda */
-  width: 150px;
-  /* Ancho del botón */
-  height: 100%;
-  /* Que tenga el alto completo de la barra superior */
-  background-color: #0d0b3f;
-  /* Mismo color que la barra superior */
-  color: #fff;
-  /* Texto blanco */
-  font-weight: bold;
+  background-color: transparent;
+  color: white;
   border: none;
+  font-size: 20px;
+  font-weight: bold;
   cursor: pointer;
-  z-index: 2000;
-  /* Para que quede por encima */
-  display: flex;
-  font-size: 18px;
-
-  /* Para centrar el texto */
-  align-items: center;
-  /* Centra verticalmente */
-  justify-content: center;
-  /* Centra horizontalmente */
-  border-right: 2px solid #2a5d9e;
-  /* Borde que lo separa del historial */
+  margin-left: 20px;
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 5px 10px;
   transition: background-color 0.3s ease;
 }
 
 .history-btn:hover {
-  background-color: #1a2b60;
-  /* Efecto al pasar el mouse */
+  background-color: rgb(35, 75, 161);
+  border-radius: 6px;
 }
 
-/* Historial lateral */
-.chat-history-sidebar {
-  position: fixed;
-  top: 0;
-  left: -300px;
-  width: 300px;
-  height: 100vh;
-  background-color: #ecf3fb;
-  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.2);
-  padding: 15px;
-  transition: left 0.3s ease;
-  z-index: 1000;
-  overflow-y: auto;
-  color: black;
 
-  /* CENTRAR TEXTO Y BURBUJITAS EN EL MEDIO */
-  display: flex;
-  justify-content: center;
-  align-items: center;
+.chat-history-sidebar {
+  position: absolute;
+  top: 100%;
+  /* Justo debajo del header */
+  /* Pegado al margen izquierdo */
+  width: 300px;
+  /* Ancho como antes */
+  max-height: 0;
+  overflow: hidden;
+  background-color: #ecf3fb;
+  transition: max-height 0.4s ease, padding 0.3s ease;
+  z-index: 900;
+  color: black;
+  padding: 0 15px;
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.2);
   text-align: center;
-  font-size: 18px;
-  font-weight: bold;
-  border-left: 3px solid #2a5d9e;
-  /* Línea divisoria azul */
-  padding-left: 10px;
+  border: 2px solid #2a5d9e;
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+  font-size: 20px;
 }
 
 .chat-history-sidebar.show {
-  left: 150px;
-  /* Ahora empieza desde el borde del botón */
+  max-height: 500px;
+  padding: 20px 15px;
 }
 
 .chat-history-sidebar.hide {
-  left: -300px;
+  max-height: 0;
+  padding: 0 15px;
 }
 
 /* Burbujas del historial */
