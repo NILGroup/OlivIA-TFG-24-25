@@ -1830,3 +1830,27 @@ body {
 .custom-followup-btn:hover {
   background-color: #20a558;
 }
+
+.ai-bottom-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+}
+
+/* Ya debes tener algo similar, por si acaso */
+.see-more-btn {
+  margin-top: 10px;
+  background-color: #f0f8ff;
+  border: 1px solid #2a5d9e;
+  border-radius: 5px;
+  padding: 4px 10px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: #2a5d9e;
+  transition: background-color 0.3s ease;
+}
+
+.see-more-btn:hover {
+  background-color: #dceeff;
+}

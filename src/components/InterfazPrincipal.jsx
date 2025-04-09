@@ -47,6 +47,7 @@ export default function InterfazPrincipal({ summary }) {
     // Para lo de escuchar el texto
     const [chatFlow, setChatFlow] = useState([]);
 
+
     /** ================================
     *   ESTADOS PARA BOTON DE REFORMULAR
     *  =================================
@@ -214,7 +215,14 @@ export default function InterfazPrincipal({ summary }) {
             setSpeechState("playing");
         }
     };
+    const [expandedResponses, setExpandedResponses] = useState({});
 
+    const toggleExpanded = (index) => {
+        setExpandedResponses((prev) => ({
+            ...prev,
+            [index]: !prev[index],
+        }));
+    };
 
     // Para el primer prompt
     const sendPrompt = async () => {
@@ -584,10 +592,23 @@ export default function InterfazPrincipal({ summary }) {
                                 className={`chat-container ${entry.type === "user" ? "user-container" : "ai-container"}`}
                             >
                                 <div className={`chat-message ${entry.type === "user" ? "user-message" : "ai-message"}`}>
-                                    <ReactMarkdown>{entry.content}</ReactMarkdown>
+                                    <ReactMarkdown>
+                                        {expandedResponses[index] || entry.content.length <= 1000
+                                            ? entry.content
+                                            : entry.content.slice(0, 1000) + "…"}
+                                    </ReactMarkdown>
 
                                     {entry.type === "ai" && (
-                                        <div className="icon-container">
+                                        <div className="ai-bottom-row">
+                                            {entry.content.length > 1000 && (
+                                                <button
+                                                    className="see-more-btn"
+                                                    onClick={() => toggleExpanded(index)}
+                                                >
+                                                    {expandedResponses[index] ? "Ver menos" : "Ver más"}
+                                                </button>
+                                            )}
+
                                             <button
                                                 className="audio-btn"
                                                 onClick={() => toggleSpeech(entry.content, index)}
@@ -605,7 +626,6 @@ export default function InterfazPrincipal({ summary }) {
                                                             ? "⏸️ Pausar"
                                                             : "▶️ Reanudar"
                                                 }
-
                                             >
                                                 {activeSpeechId !== index || speechState === "idle"
                                                     ? "🔊"
@@ -613,10 +633,10 @@ export default function InterfazPrincipal({ summary }) {
                                                         ? "⏸️"
                                                         : "▶️"}
                                             </button>
-
                                         </div>
+                                    )
+                                    }
 
-                                    )}
                                 </div>
                             </div>
                         ))}
