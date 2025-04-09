@@ -144,6 +144,107 @@ export default function InterfazPrincipal({ summary }) {
     const [speechState, setSpeechState] = useState("idle"); // idle | playing | paused
     const [activeSpeechId, setActiveSpeechId] = useState(null); // ID del mensaje que se está leyendo
 
+    /** ================================
+       *  ESTADOS PARA CONFIGURACIÓN
+       *  ================================
+       */
+
+    const [showConfig, setShowConfig] = useState(false);
+
+    // Lógica de edición
+    const [editingField, setEditingField] = useState(null);
+    const [tempSummary, setTempSummary] = useState({ ...summary });
+
+    const getOptionsForField = (key) => {
+        const options = {
+            nombre: [], // No necesitas opciones para nombre, ya es campo libre
+
+            camino: [
+                "TEA",
+                "Dislexia",
+                "TDAH",
+                "Memoria",
+                "Prefiero no responder",
+                "Otra" // se puede agregar dinámicamente cuando se escribe en el textarea
+            ],
+
+            retos: [
+                "Textos Largos",
+                "Palabras Dificiles",
+                "Organizar Ideas",
+                "Mantener Atencion",
+                "Memoria",
+                "Otra"
+            ],
+
+            herramientas: [
+                "ejemplo",       // 🖋️ Usar ejemplos
+                "bullet",        // 📒 Respuestas en bullets
+                "textocorto",    // 📃 Texto corto
+                "frasescortas"   // ✂️ Frases cortas
+            ]
+        };
+
+        return options[key] || [];
+    };
+
+    const getLabelForOption = (option) => {
+        const labels = {
+            "TEA": "TEA",
+            "Dislexia": "Dislexia",
+            "TDAH": "TDAH",
+            "Memoria": "Memoria",
+            "Prefiero no responder": "Prefiero no responder",
+            "Textos Largos": "Textos largos",
+            "Palabras Dificiles": "Palabras difíciles",
+            "Organizar Ideas": "Organizar ideas",
+            "Mantener Atencion": "Mantener la atención",
+            "ejemplo": "Usar ejemplos",
+            "bullet": "Respuestas en bullets",
+            "textocorto": "Texto corto",
+            "frasescortas": "Frases cortas"
+        };
+        return labels[option] || option;
+    };
+
+    const getEmojiForOption = (option) => {
+        const emojis = {
+            "TEA": "🧩",
+            "Dislexia": "🔠",
+            "TDAH": "⚡",
+            "Memoria": "🧠",
+            "Prefiero no responder": "❌",
+            "Textos Largos": "📖",
+            "Palabras Dificiles": "🧩",
+            "Organizar Ideas": "📝",
+            "Mantener Atencion": "🎯",
+            "ejemplo": "🖋️",
+            "bullet": "📒",
+            "textocorto": "📃",
+            "frasescortas": "✂️"
+        };
+        return emojis[option] || "🔧";
+    };
+
+
+
+    const toggleOption = (key, option) => {
+        const current = tempSummary[key] || [];
+        const exists = current.includes(option);
+
+        const updated = exists
+            ? current.filter(o => o !== option)
+            : [...current, option];
+
+        setTempSummary({ ...tempSummary, [key]: updated });
+    };
+
+    const saveFieldChanges = (key) => {
+        summary[key] = tempSummary[key]; // Actualiza el objeto original
+        setEditingField(null);
+    };
+
+
 
     /** =================================
      *  OPCIONES DE PREGUNTAS DISPONIBLES
@@ -454,6 +555,8 @@ export default function InterfazPrincipal({ summary }) {
 
         <div className="app-wrapper">
             <div className="header-bar">
+
+
                 <button
                     className={`history-btn ${showHistory ? "open" : "closed"}`}
                     onClick={toggleHistory}
@@ -462,6 +565,12 @@ export default function InterfazPrincipal({ summary }) {
                 </button>
                 OlivIA
 
+                <button
+                    className={`config-btn ${showConfig ? "open" : "closed"}`}
+                    onClick={() => setShowConfig(!showConfig)}
+                >
+                    {showConfig ? "⚙️ Cerrar Configuración" : "⚙️ Abrir Configuración"}
+                </button>
 
 
                 {/* Menú lateral del historial */}
@@ -537,6 +646,88 @@ export default function InterfazPrincipal({ summary }) {
                     </div>
                 </div>
             )}
+            {showConfig && (
+                <div className="config-panel">
+                    <h2> Configuración del cuestionario</h2>
+
+                    {Object.entries(summary)
+                        .filter(([key]) => ["nombre", "camino", "retos", "herramientas"].includes(key))
+                        .map(([key, value]) => (
+                            <div className="config-section" key={key}>
+                                <div className="config-title-row">
+                                    <h3>{key.charAt(0).toUpperCase() + key.slice(1)}</h3>
+                                    <button
+                                        className="modify-btn"
+                                        onClick={() => setEditingField(key)}
+                                    >
+                                        ✏️ Modificar
+                                    </button>
+                                </div>
+
+                                {/* Mostrar valor actual */}
+                                {key === "nombre" ? (
+                                    <p>{tempSummary.nombre}</p>
+                                ) : (
+                                    <p>{Array.isArray(tempSummary[key]) ? tempSummary[key].join(", ") : tempSummary[key]}</p>
+                                )}
+
+                                {/* Campos de edición */}
+                                {editingField === key && (
+                                    <div className="edit-options">
+
+                                        {key === "nombre" ? (
+                                            <input
+                                                type="text"
+                                                className="nombre-input"
+                                                placeholder="Introduce tu nombre..."
+                                                value={tempSummary.nombre}
+                                                onChange={(e) =>
+                                                    setTempSummary({ ...tempSummary, nombre: e.target.value })
+                                                }
+                                            />
+
+                                        ) : (
+                                            getOptionsForField(key).map(option => (
+                                                <label key={option} className="config-toggle-option">
+                                                    <span className="config-toggle-label">{getEmojiForOption(option)} {getLabelForOption(option)}</span>
+                                                    <label className="config-switch">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={tempSummary[key]?.includes(option)}
+                                                            onChange={() => toggleOption(key, option)}
+                                                        />
+                                                        <span className="slider"></span>
+                                                    </label>
+                                                </label>
+                                            ))
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+
+                        ))}
+
+                    <div className="edit-buttons-global">
+                        <button className="cancel-btn" onClick={() => {
+                            setTempSummary({ ...summary });
+                            setEditingField(null);
+                        }}>
+                            ❌ Descartar cambios
+                        </button>
+                        <button className="save-btn" onClick={() => {
+                            Object.keys(summary).forEach(key => {
+                                if (["nombre", "camino", "retos", "herramientas"].includes(key)) {
+                                    summary[key] = tempSummary[key];
+                                }
+                            });
+                            setEditingField(null);
+                        }}>
+                            ✅ Guardar cambios
+                        </button>
+                    </div>
+
+                </div>
+            )}
 
             {!showChat ? (
                 <>
@@ -576,6 +767,7 @@ export default function InterfazPrincipal({ summary }) {
                             🔍 ¡Descubrir Respuesta!
                         </button>
                     </div>
+
                 </>
             ) : (
                 <div className="chat-wrapper">
@@ -813,8 +1005,10 @@ export default function InterfazPrincipal({ summary }) {
                             </div>
                         </>
                     )}
+
                 </div>
             )}
+
         </div>
     );
 }
