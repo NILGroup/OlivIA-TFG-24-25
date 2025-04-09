@@ -1210,8 +1210,6 @@ body {
 .chat-wrapper {
   display: flex;
   flex-direction: column;
-  width: 90%;
-  max-width: 1000px;
   gap: 10px;
   margin-top: 20px;
   align-items: center;
@@ -1785,9 +1783,9 @@ body {
 }
 
 .custom-followup-box {
-  margin-top: 40px;
+  margin-top: 50px;
   background-color: #f6f3c1;
-  padding: 16px;
+  padding: 20px;
   border-radius: 12px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
@@ -1864,7 +1862,7 @@ body {
   font-weight: bold;
   cursor: pointer;
   position: absolute;
-  right: 30px;
+  right: 10px;
   top: 50%;
   transform: translateY(-50%);
   padding: 5px 10px;
