@@ -1674,70 +1674,68 @@ body {
 }
 
 /* Títulos dentro del resumen */
-.summary-box h3 {
+
+.summary-box-horizontal {
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  background-color: #d7e6ff;
+  border: 3px solid #000;
+  border-radius: 15px;
+  padding: 30px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  max-width: 900px;
+  margin: 0 auto 40px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.summary-box-horizontal h3 {
   font-size: 30px;
-  color: #000;
-  /* Texto en negro */
-  font-weight: bold;
-  margin-bottom: 15px;
-  /* Mayor espacio después de cada título */
-  text-transform: uppercase;
-  margin-bottom: 30px;
+  text-align: center;
+  margin-bottom: 20px;
 }
 
-.summary-box h4 {
-  margin-bottom: 30px;
-  margin-top: 30px;
-
-  color: #000;
-  font-size: 20px;
-  /* Texto en negro */
-  font-weight: bold;
-  margin-bottom: 15px;
-  /* Mayor espacio después de cada título */
-  text-transform: uppercase;
+.summary-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
 }
 
-/* Párrafos del resumen (nombre)*/
-.summary-box p {
-  color: #000;
-  font-size: 20px;
-  /* Texto en negro */
+.summary-title {
+  font-size: 25px;
   font-weight: bold;
+  min-width: 180px;
+  text-align: left;
+  color: black;
 }
 
-/* Estilo de las burbujas de opciones elegidas */
-.summary-box ul {
+.summary-data {
+  font-size: 25px;
+  font-weight: bold;
+  color: #000;
+}
+
+.summary-bubbles {
   list-style: none;
-  padding: 0;
   display: flex;
   flex-wrap: wrap;
-  gap: 15px;
-  /* Espacio entre cada burbuja */
-  justify-content: center;
-  margin-top: 10px;
-  /* Espacio extra antes de las burbujas */
+  gap: 10px;
+  padding: 0;
+  margin: 0;
 }
 
-.summary-box li {
+.summary-bubbles li {
   background-color: #000366;
-  /* Ahora en negro */
-  color: #ffffff;
-  /* Texto en blanco */
-  padding: 8px 20px;
+  color: white;
+  padding: 8px 16px;
   border-radius: 20px;
   font-weight: bold;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
-  display: inline-block;
-  transition: transform 0.2s ease-in-out;
+  font-size: 20px;
 }
 
-/* Efecto hover */
-.summary-box li:hover {
-  transform: scale(1.05);
-  background-color: #333;
-  /* Negro suave en hover */
-}
 
 /* Cuadro de texto para palabras desconocidas */
 .textarea-synonyms {
@@ -1755,7 +1753,7 @@ body {
   border: 2px solid #7a7a7a;
   background-color: #f8f8f8;
   resize: none;
-  text-align: center;
+  text-align: left;
   font-weight: bold;
   color: black;
   transition: border-color 0.3s ease-in-out;
@@ -1788,4 +1786,66 @@ body {
 .synonyms-btn:hover {
   background-color: #188e20;
   /* Azul más oscuro */
+}
+
+.saving-msg {
+  font-style: italic;
+  opacity: 0.8;
+  background-color: #e0f7fa;
+  padding: 0.5rem;
+  border-radius: 10px;
+  margin-top: 10px;
+}
+
+.followup-container {
+  margin-top: 30px;
+  /* Separación respecto a los botones */
+}
+
+.custom-followup-box {
+  margin-top: 40px;
+  background-color: #f6f3c1;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.custom-followup-title {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.custom-followup-textarea {
+  width: 100%;
+  min-height: 90px;
+  padding: 10px;
+  font-size: 0.95rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background-color: white;
+  color: #000;
+  resize: none;
+
+}
+
+.custom-followup-btn {
+  margin: 10px auto 0 auto;
+  background-color: #27c16c;
+  color: white;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.custom-followup-btn:hover {
+  background-color: #20a558;
 }

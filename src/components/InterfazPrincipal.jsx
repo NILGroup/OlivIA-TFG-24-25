@@ -4,7 +4,7 @@ import robotLogo from "../assets/AventurIA_robot_sinfondo.png";
 
 export default function InterfazPrincipal({ summary }) {
 
-    const API_KEY = import.meta.env.VITE_DEEPSEEK_API_KEY;
+    const API_KEY = import.meta.env.VITE_MISTRAL_API_KEY;
 
     /** ================================
     *    RESULTADO QUESTIONARIO
@@ -99,21 +99,20 @@ export default function InterfazPrincipal({ summary }) {
 
     // Método para reformular toda la respuesta
     const requestSimplifiedResponse = () => {
-        const lastResponse = getLastAIResponse();  //   Obtener la última respuesta del flujo del chat
+        const lastResponse = getLastAIResponse();
         if (!lastResponse.trim()) return;
 
         const simplifiedPrompt = `"${lastResponse}"`;
-        sendCustomPrompt(simplifiedPrompt, "Reformular de la manera más sencilla y corta posible");
+        sendCustomPrompt(simplifiedPrompt, "Reformular de la manera más sencilla y corta posible", "Reformular toda la respuesta");
 
-        setShowSimplificationOptions(false); // Ocultar opciones tras la acción
+        setShowSimplificationOptions(false);
     };
-
 
     // Método para solicitar sinónimos 
     const requestSynonyms = (words) => {
         if (words.trim()) {
             const synonymPrompt = `${words}`;
-            sendCustomPrompt(synonymPrompt, "Dame un sinónimo y una definición corta y muy sencilla de");
+            sendCustomPrompt(synonymPrompt, "Dame un sinónimo y una definición corta y muy sencilla de", `Dame sinónimos de ${synonymPrompt}`);
             setShowTextInput(false);  // Ocultar el cuadro de texto
         } else {
             alert("Por favor, escribe algunas palabras para buscar sinónimos.");
@@ -138,7 +137,11 @@ export default function InterfazPrincipal({ summary }) {
     const [chatHistory, setChatHistory] = useState([]);
     const [showHistory, setShowHistory] = useState(false); // Mostrar/ocultar historial
     const [activeChat, setActiveChat] = useState(null); // Almacena el chat activo
+    const [isSavingChat, setIsSavingChat] = useState(false);
 
+    // Estado para cambiar el icono de reproducir respuesta
+    const [speechState, setSpeechState] = useState("idle"); // idle | playing | paused
+    const [activeSpeechId, setActiveSpeechId] = useState(null); // ID del mensaje que se está leyendo
 
 
     /** =================================
@@ -165,9 +168,8 @@ export default function InterfazPrincipal({ summary }) {
     };
 
     // Función para leer texto en voz alta
-    const speakText = () => {
-        const lastResponse = getLastAIResponse();
-        if (!lastResponse.trim()) {
+    const speakText = (text, id) => {
+        if (!text.trim()) {
             alert("No hay texto para reproducir.");
             return;
         }
@@ -176,27 +178,43 @@ export default function InterfazPrincipal({ summary }) {
             alert("Tu navegador no soporta la síntesis de voz.");
             return;
         }
+
         window.speechSynthesis.cancel();
 
-        const utterance = new SpeechSynthesisUtterance(lastResponse);
+        const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'es-ES';
         utterance.rate = 1;
         utterance.pitch = 1;
 
+        utterance.onstart = () => {
+            setActiveSpeechId(id);
+            setSpeechState("playing");
+        };
+        utterance.onend = () => {
+            setSpeechState("idle");
+            setActiveSpeechId(null);
+        };
+        utterance.onerror = () => {
+            setSpeechState("idle");
+            setActiveSpeechId(null);
+        };
+
         window.speechSynthesis.speak(utterance);
     };
-    const pauseSpeech = () => {
-        if (window.speechSynthesis.speaking) {
+
+
+    const toggleSpeech = (text, id) => {
+        if (activeSpeechId !== id) {
+            speakText(text, id);
+        } else if (speechState === "playing") {
             window.speechSynthesis.pause();
+            setSpeechState("paused");
+        } else if (speechState === "paused") {
+            window.speechSynthesis.resume();
+            setSpeechState("playing");
         }
     };
 
-    // Función para reanudar la lectura
-    const resumeSpeech = () => {
-        if (window.speechSynthesis.paused) {
-            window.speechSynthesis.resume();
-        }
-    };
 
     // Para el primer prompt
     const sendPrompt = async () => {
@@ -262,20 +280,20 @@ export default function InterfazPrincipal({ summary }) {
         setLoading(false);
     };
 
-    const sendCustomPrompt = async (customPrompt, context = "") => {
+    const sendCustomPrompt = async (customPrompt, context = "", displayOverride = null) => {
         if (!customPrompt.trim()) return;
 
         resetHelpOptions();
         setLoading(true);
         setShowChat(true);
 
-        const { displayPrompt, apiPrompt } = buildPrompt(
+        const { apiPrompt } = buildPrompt(
             context ? `${context} ${customPrompt}` : customPrompt
         );
 
-        setChatFlow((prev) => [...prev, { type: "user", content: displayPrompt }]);
+        const displayPrompt = displayOverride || customPrompt;
 
-        //  Mostrar mensaje temporal de "⌛ Cargando..."
+        setChatFlow((prev) => [...prev, { type: "user", content: displayPrompt }]);
         setChatFlow((prev) => [...prev, { type: "loading", content: "⌛ Cargando..." }]);
 
         try {
@@ -292,23 +310,15 @@ export default function InterfazPrincipal({ summary }) {
             });
 
             const data = await res.json();
-
-            //     Eliminar el mensaje de "⌛ Cargando..."
             setChatFlow((prev) => prev.filter(entry => entry.type !== "loading"));
-
-            //  Añadir la respuesta generada al flujo del chat
             setChatFlow((prev) => [
                 ...prev,
                 { type: "ai", content: data.choices?.[0]?.message?.content || "Sin respuesta :(" }
             ]);
-
             setShowHelpOptions(true);
         } catch (error) {
             console.error("Error obteniendo respuesta:", error);
-
-            //     Eliminar el mensaje de "⌛ Cargando..." en caso de error
             setChatFlow((prev) => prev.filter(entry => entry.type !== "loading"));
-
             setChatFlow((prev) => [
                 ...prev,
                 { type: "ai", content: "Error al obtener la respuesta." }
@@ -319,44 +329,86 @@ export default function InterfazPrincipal({ summary }) {
     };
 
 
-    // Solicitar un resumen usando sendCustomPrompt
+
     const requestSummary = async () => {
-        const lastResponse = getLastAIResponse();  //   Obtener la última respuesta del flujo del chat
+        const lastResponse = getLastAIResponse();
         if (!lastResponse.trim()) return;
 
-        await sendCustomPrompt(lastResponse, "Resumir el siguiente texto:");
+        await sendCustomPrompt(lastResponse, "Resumir el siguiente texto:", "Dame un resumen");
     };
 
-    // Solicitar un ejemplo usando sendCustomPrompt
     const requestExample = async () => {
-        const lastResponse = getLastAIResponse();  //   Obtener la última respuesta del flujo del chat
+        const lastResponse = getLastAIResponse();
         if (!lastResponse.trim()) return;
 
-        await sendCustomPrompt(lastResponse, "Dame un ejemplo del siguiente texto:");
+        await sendCustomPrompt(lastResponse, "Dame un ejemplo del siguiente texto:", "Explícame con un ejemplo");
     };
+
 
     // BOTON PREGUNTA POST GENERAR RESPUESTA - Guardar chat en historial y empezar de nuevo
     const toggleHistory = () => setShowHistory(!showHistory);
 
-    const saveChatToHistory = () => {
+
+    const generateTitleFromChat = async () => {
+        const conversation = chatFlow
+            .filter(entry => entry.type === "user" || entry.type === "ai")
+            .map(entry => `${entry.type === "user" ? "Usuario" : "IA"}: ${entry.content}`)
+            .join("\n");
+
+        const prompt = `Lee esta conversación y dime un título corto (máximo 7 palabras) que represente de qué se trata. No uses comillas, ni hagas una frase larga:\n\n${conversation}`;
+
+        try {
+            const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${API_KEY}`,
+                },
+                body: JSON.stringify({
+                    model: "deepseek/deepseek-r1:free", // o el modelo que uses
+                    messages: [{ role: "user", content: prompt }],
+                }),
+            });
+
+            const data = await res.json();
+            const aiTitle = data.choices?.[0]?.message?.content?.trim();
+
+            return aiTitle || "Conversación guardada";
+        } catch (error) {
+            console.error("Error generando título:", error);
+            return "Conversación guardada";
+        }
+    };
+
+
+    const saveChatToHistory = async () => {
         if (chatFlow.length === 0) return;
 
+        setIsSavingChat(true);
+
+        const aiGeneratedTitle = await generateTitleFromChat();
+
         const chatEntry = {
-            title: chatFlow[0]?.content || "Chat sin título",  // Primer mensaje como título
-            flow: [...chatFlow],  // Guarda todo el flujo del chat
+            title: aiGeneratedTitle,
+            flow: [...chatFlow],
             timestamp: new Date().toLocaleString(),
             isNew: true
         };
 
-        setChatHistory([...chatHistory.map(entry => ({ ...entry, isNew: false })), chatEntry]);
-        setShowUsefulQuestion(false);
-        setSelectedOption(null);  // Reinicia la opción seleccionada
-        setPrompt("");            // Borra el texto del prompt
+        setChatHistory([
+            ...chatHistory.map(entry => ({ ...entry, isNew: false })),
+            chatEntry
+        ]);
 
+        setShowUsefulQuestion(false);
+        setSelectedOption(null);
+        setPrompt("");
         setShowInitialOptions(false);
         setShowChat(false);
         setShowHistory(true);
         setChatFlow([]);
+
+        setIsSavingChat(false);
     };
 
 
@@ -508,30 +560,30 @@ export default function InterfazPrincipal({ summary }) {
                                         <div className="icon-container">
                                             <button
                                                 className="audio-btn"
-                                                onClick={() => speakText(entry.content)}
-                                                aria-label="Reproducir en voz alta"
-                                                title="Reproducir en voz alta"
+                                                onClick={() => toggleSpeech(entry.content, index)}
+                                                aria-label={
+                                                    activeSpeechId !== index || speechState === "idle"
+                                                        ? "Reproducir en voz alta"
+                                                        : speechState === "playing"
+                                                            ? "Pausar reproducción"
+                                                            : "Reanudar reproducción"
+                                                }
+                                                title={
+                                                    activeSpeechId !== index || speechState === "idle"
+                                                        ? "🔊 Reproducir"
+                                                        : speechState === "playing"
+                                                            ? "⏸️ Pausar"
+                                                            : "▶️ Reanudar"
+                                                }
+
                                             >
-                                                🔊
+                                                {activeSpeechId !== index || speechState === "idle"
+                                                    ? "🔊"
+                                                    : speechState === "playing"
+                                                        ? "⏸️"
+                                                        : "▶️"}
                                             </button>
 
-                                            <button
-                                                className="pause-btn"
-                                                onClick={pauseSpeech}
-                                                aria-label="Pausar reproducción"
-                                                title="Pausar reproducción"
-                                            >
-                                                ⏸️
-                                            </button>
-
-                                            <button
-                                                className="resume-btn"
-                                                onClick={resumeSpeech}
-                                                aria-label="Reanudar reproducción"
-                                                title="Reanudar reproducción"
-                                            >
-                                                ▶️
-                                            </button>
                                         </div>
 
                                     )}
@@ -591,7 +643,31 @@ export default function InterfazPrincipal({ summary }) {
                                     </button>
                                 </div>
                             </div>
+                            {!showSimplificationOptions && (
+                                <div className="chat-container">
+                                    <div className="custom-followup-box">
+                                        <h4 className="custom-followup-title"><strong>¿Prefieres formular la pregunta desde cero?</strong></h4>
+                                        <textarea
+                                            className="custom-followup-textarea"
+                                            placeholder="Escribe aquí tu pregunta..."
+                                            value={prompt}
+                                            onChange={(e) => setPrompt(e.target.value)}
+                                        ></textarea>
+                                        <button
+                                            className="custom-followup-btn"
+                                            onClick={async () => {
+                                                await sendPrompt();
+                                                setPrompt(""); // Limpia el campo tras enviar
+                                            }}
+                                        >
+                                            🔍 ¡Descubrir Respuesta!                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+
                         </>
+
                     )}
                     {showSimplificationOptions && (
                         <>
@@ -640,9 +716,15 @@ export default function InterfazPrincipal({ summary }) {
                             )}
                         </>
                     )}
+                    {isSavingChat && (
+                        <div className="chat-container ai-container">
+                            <div className="chat-message ai-message saving-msg">
+                                💾 Guardando conversación...
+                            </div>
+                        </div>
+                    )}
 
-
-                    {showUsefulQuestion && (
+                    {showUsefulQuestion && !isSavingChat && !activeChat && (
                         <>
                             <div className="chat-container ai-container">
                                 <div className="robot-bubble">
@@ -664,7 +746,7 @@ export default function InterfazPrincipal({ summary }) {
                                     </button>
                                     <button
                                         className="help-btn green"
-                                        onClick={saveChatToHistory}
+                                        onClick={async () => await saveChatToHistory()}
                                     >
                                         😊 Sí, todo claro
                                     </button>

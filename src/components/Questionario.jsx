@@ -136,50 +136,60 @@ export default function Questionario({ onComplete }) {
             mostrarPorPartes: !pauseEnabled
         }));
     };
-
     const generateSummary = () => (
-        <div className="summary-box">
+        <div className="summary-box-horizontal">
             <h3>Resumen de tu nueva compañera virtual:</h3>
 
-            {/* Nombre del usuario */}
-            <h4>👤 ¡Tu compañera digital te conoce como:</h4>
-            <p>{summary.nombre || "No se ha introducido el nombre."}</p>
+            {/* Nombre */}
+            <div className="summary-row">
+                <span className="summary-title">🧑 Tu nombre:</span>
+                <span className="summary-data">{summary.nombre || "No indicado"}</span>
+            </div>
 
-            {/* Camino elegido */}
-            <h4>⭐ Te identificas con:</h4>
-            <ul>
-                {summary.camino.length > 0
-                    ? summary.camino.map((item) => <li key={item}>{item}</li>)
-                    : <li>No se seleccionó ningún camino.</li>
-                }
-            </ul>
+            {/* Identificación */}
+            <div className="summary-row">
+                <span className="summary-title">⭐ Te identificas con:</span>
+                <ul className="summary-bubbles">
+                    {summary.camino.length > 0 ? (
+                        summary.camino.map((item) => <li key={item}>{item}</li>)
+                    ) : (
+                        <li>No seleccionado</li>
+                    )}
+                </ul>
+            </div>
 
-            {/* Retos seleccionados */}
-            <h4>📌 Te cuesta:</h4>
-            <ul>
-                {summary.retos.length > 0
-                    ? summary.retos.map((item) => <li key={item}>{item}</li>)
-                    : <li>No se seleccionó ningún reto.</li>
-                }
-            </ul>
+            {/* Retos */}
+            <div className="summary-row">
+                <span className="summary-title">📌 Te cuesta:</span>
+                <ul className="summary-bubbles">
+                    {summary.retos.length > 0 ? (
+                        summary.retos.map((item) => <li key={item}>{item}</li>)
+                    ) : (
+                        <li>No seleccionado</li>
+                    )}
+                </ul>
+            </div>
 
-            {/* Herramientas seleccionadas */}
-            <h4>🧠 Tu compañera te ayudará usando:</h4>
-            <ul>
-                {summary.herramientas.length > 0
-                    ? summary.herramientas.map((toolId) => {
-                        if (toolId === "mostrarPorPartes") {
-                            return <li key={toolId}>📚 Mostrar información por partes</li>;
-                        }
-                        const tool = tools.find((t) => t.id === toolId);
-                        return <li key={toolId}>{tool.label}</li>;
-                    })
-                    : <li>No se seleccionó ninguna herramienta.</li>
-                }
-            </ul>
-
+            {/* Herramientas */}
+            <div className="summary-row">
+                <span className="summary-title">🧠 Te ayudará usando:</span>
+                <ul className="summary-bubbles">
+                    {summary.herramientas.length > 0 ? (
+                        summary.herramientas.map((toolId) => {
+                            if (toolId === "mostrarPorPartes") {
+                                return <li key={toolId}>📚 Mostrar por partes</li>;
+                            }
+                            const tool = tools.find((t) => t.id === toolId);
+                            return <li key={toolId}>{tool?.label || toolId}</li>;
+                        })
+                    ) : (
+                        <li>No se seleccionó ninguna herramienta</li>
+                    )}
+                </ul>
+            </div>
         </div>
     );
+
 
 
     /** ================================
@@ -192,8 +202,8 @@ export default function Questionario({ onComplete }) {
         { id: "ejemplo", label: "🖋️ Usar ejemplos", color: "green" },
         { id: "bullet", label: "📒 Respuestas en bullets", color: "purple" },
         { id: "textocorto", label: "📃 Texto Corto", color: "blue" },
-        { id: "frasescortas", label: "✂️ Frases cortas", color: "yellow" },
-        { id: "mostrarPorPartes", label: "📚 Mostrar información por partes", color: "orange" }  // NUEVA OPCIÓN
+        { id: "frasescortas", label: "✂️ Frases cortas", color: "yellow" }
+        //{ id: "mostrarPorPartes", label: "📚 Mostrar información por partes", color: "orange" }  // NUEVA OPCIÓN
     ];
 
     // Estado de herramientas seleccionadas
@@ -502,15 +512,7 @@ export default function Questionario({ onComplete }) {
                         <p>Teniendo en cuenta lo elegido antes</p>
                         <h3>¿Cómo quieres que te ayude tu compañero digital? </h3>
                         <p>Elige todas las opciones que veas necesarias:</p>
-                        {/* Definición destacada de planeta */}
-                        <div className="definition">
-                            Ejemplo:
-                            <br />
-                            Un planeta 🌍 es un cuerpo celeste que orbita alrededor de una estrella,
-                            tiene suficiente masa para que su gravedad le dé una forma esférica y
-                            ha limpiado su órbita de otros objetos.
-                            <br />
-                        </div>
+
 
                         <div className="options-container">
                             {tools.map((tool) => (
@@ -532,8 +534,7 @@ export default function Questionario({ onComplete }) {
                                         <label className="example-title">Ejemplo:</label>
                                         {tool.id === "ejemplo" && (
                                             <ul>
-                                                <li>🪐 Un planeta es como una bola gigante que gira alrededor de una estrella.</li>
-                                                <li>🌍 Por ejemplo, la Tierra es un planeta que gira alrededor del Sol.</li>
+                                                <li>Un planeta es como una pelota gigante que da vueltas alrededor de una luz muy fuerte, como el Sol. Por ejemplo, la Tierra es un planeta que gira alrededor del Sol.</li>
                                             </ul>
                                         )}
 
@@ -541,35 +542,22 @@ export default function Questionario({ onComplete }) {
                                             <ul>
                                                 <li>🪐 Cuerpo celeste.</li>
                                                 <li>💫 Órbita alrededor de una estrella.</li>
-                                                <li>🌍 Forma esférica.</li>
-                                                <li>🛰️ Limpia su órbita de otros objetos.</li>
+                                                <li>🌍 Suficiente masa para ser esférico.</li>
                                             </ul>
                                         )}
 
                                         {tool.id === "textocorto" && (
                                             <ul>
-                                                <li>🪐 Un planeta es un cuerpo celeste que gira alrededor de una estrella y tiene forma esférica.</li>
+                                                <li>Un planeta es un cuerpo celeste que gira alrededor de una estrella y tiene forma esférica.</li>
                                             </ul>
                                         )}
 
                                         {tool.id === "frasescortas" && (
                                             <ul>
-                                                <li>🪐 Es una bola en el espacio.</li>
-                                                <li>💫 Gira alrededor de una estrella.</li>
-                                                <li>🌍 Tiene forma redonda.</li>
+                                                <li>Es un cuerpo celeste. Orbita alrededor de una estrella. Tiene masa suficiente para volverse esférico.</li>
                                             </ul>
                                         )}
 
-                                        {tool.id === "mostrarPorPartes" && (
-                                            <ul>                                            📚 <strong>Parte 1:</strong> Un planeta es un cuerpo celeste.
-                                                <br />
-                                                📚 <strong>Parte 2:</strong> Gira alrededor de una estrella.
-                                                <br />
-                                                📚 <strong>Parte 3:</strong> Tiene forma esférica.
-                                                <br />
-                                                📚 <strong>Parte 4:</strong> Limpia su órbita de otros objetos.
-                                            </ul>
-                                        )}
                                     </div>
                                 </div>
                             ))}
