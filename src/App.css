@@ -624,7 +624,6 @@ body {
 /* Estilos del textarea */
 .custom-textarea {
   width: 80%;
-  margin-bottom: 40px;
   max-width: 400px;
   height: 80px;
   padding: 10px;
@@ -1907,7 +1906,11 @@ body {
   font-size: 45px
 }
 
-.config-panel h3,
+.config-panel h3 {
+  color: black;
+  margin-bottom: 10px;
+}
+
 .config-panel p {
   color: black;
 }
@@ -1923,6 +1926,8 @@ body {
 }
 
 .modify-btn {
+  margin-bottom: 10px;
+
   background-color: #ffd966;
   border: none;
   padding: 5px 10px;
@@ -1942,6 +1947,7 @@ body {
 }
 
 .edit-buttons-global .cancel-btn {
+
   background-color: #626262;
   color: white;
   padding: 10px 20px;

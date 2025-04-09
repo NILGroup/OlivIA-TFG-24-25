@@ -48,7 +48,7 @@ export default function Questionario({ onComplete }) {
      */
     const [summary, setSummary] = useState({
         nombre: "",            // Para el caso 1
-        camino: [],            // Para el caso 2
+        discapacidad: [],            // Para el caso 2
         retos: [],             // Para el caso 3
         herramientas: [],      // Para el caso 4
         mostrarPorPartes: false // Para la opción "Mostrar por partes"
@@ -63,27 +63,27 @@ export default function Questionario({ onComplete }) {
     };
 
     // PÁGINA 2
-    const toggleCamino = (id) => {
+    const togglediscapacidad = (id) => {
         if (id === "Otra") {
             setOtraSeleccionada(!otraSeleccionada);
 
             if (!otraSeleccionada && otraRespuesta.trim()) {
                 setSummary(prevSummary => ({
                     ...prevSummary,
-                    camino: [...prevSummary.camino, `Otra - ${otraRespuesta}`]
+                    discapacidad: [...prevSummary.discapacidad, `Otra - ${otraRespuesta}`]
                 }));
             } else {
                 setSummary(prevSummary => ({
                     ...prevSummary,
-                    camino: prevSummary.camino.filter(item => !item.startsWith("Otra - "))
+                    discapacidad: prevSummary.discapacidad.filter(item => !item.startsWith("Otra - "))
                 }));
             }
         } else {
             setSummary(prevSummary => ({
                 ...prevSummary,
-                camino: prevSummary.camino.includes(id)
-                    ? prevSummary.camino.filter((item) => item !== id)
-                    : [...prevSummary.camino, id]
+                discapacidad: prevSummary.discapacidad.includes(id)
+                    ? prevSummary.discapacidad.filter((item) => item !== id)
+                    : [...prevSummary.discapacidad, id]
             }));
         }
     };
@@ -150,8 +150,8 @@ export default function Questionario({ onComplete }) {
             <div className="summary-row">
                 <span className="summary-title">⭐ Te identificas con:</span>
                 <ul className="summary-bubbles">
-                    {summary.camino.length > 0 ? (
-                        summary.camino.map((item) => <li key={item}>{item}</li>)
+                    {summary.discapacidad.length > 0 ? (
+                        summary.discapacidad.map((item) => <li key={item}>{item}</li>)
                     ) : (
                         <li>No seleccionado</li>
                     )}
@@ -352,8 +352,8 @@ export default function Questionario({ onComplete }) {
                                     <label className="switch">
                                         <input
                                             type="checkbox"
-                                            checked={summary.camino.includes(option.id)}
-                                            onChange={() => toggleCamino(option.id)} />
+                                            checked={summary.discapacidad.includes(option.id)}
+                                            onChange={() => togglediscapacidad(option.id)} />
                                         <span className="slider"></span>
                                     </label>
                                 </div>
@@ -398,7 +398,7 @@ export default function Questionario({ onComplete }) {
                                             onClick={() => {
                                                 setSummary(prevSummary => ({
                                                     ...prevSummary,
-                                                    camino: [...prevSummary.camino, `Otra - ${otraData.caso2.respuesta}`]
+                                                    discapacidad: [...prevSummary.discapacidad, `Otra - ${otraData.caso2.respuesta}`]
                                                 }));
                                                 setOtraData(prev => ({
                                                     ...prev,

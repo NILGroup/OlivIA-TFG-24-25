@@ -17,7 +17,7 @@ export default function InterfazPrincipal({ summary }) {
 
         const personalInfo = `
         Pero ten en cuenta estas instrucciones al responder:
-        - Mi Discapacidad: ${summary.camino.join(", ") || "Ninguna"}
+        - Mi Discapacidad: ${summary.discapacidad.join(", ") || "Ninguna"}
         - NO uses: ${summary.retos.join(", ") || "Ninguna"}
         - Quiero que me generes la repsuesta usando: ${summary.herramientas.join(", ") || "Ninguna"}
         `;
@@ -154,12 +154,16 @@ export default function InterfazPrincipal({ summary }) {
     // Lógica de edición
     const [editingField, setEditingField] = useState(null);
     const [tempSummary, setTempSummary] = useState({ ...summary });
+    const [otraOpciones, setOtraOpciones] = useState({
+        discapacidad: { activa: false, valor: "", guardado: false },
+        retos: { activa: false, valor: "", guardado: false }
+    });
 
     const getOptionsForField = (key) => {
         const options = {
             nombre: [], // No necesitas opciones para nombre, ya es campo libre
 
-            camino: [
+            discapacidad: [
                 "TEA",
                 "Dislexia",
                 "TDAH",
@@ -227,14 +231,35 @@ export default function InterfazPrincipal({ summary }) {
     };
 
 
-
     const toggleOption = (key, option) => {
         const current = tempSummary[key] || [];
         const exists = current.includes(option);
 
-        const updated = exists
-            ? current.filter(o => o !== option)
-            : [...current, option];
+        let updated;
+
+        if (option === "Otra") {
+            if (exists) {
+                // Se está apagando "Otra" -> quitamos cualquier opción "Otra - ..."
+                updated = current.filter(o => !o.startsWith("Otra -") && o !== "Otra");
+
+                setOtraOpciones(prev => ({
+                    ...prev,
+                    [key]: { activa: false, valor: "", guardado: false }
+                }));
+            } else {
+                // Se está activando "Otra"
+                updated = [...current, option];
+
+                setOtraOpciones(prev => ({
+                    ...prev,
+                    [key]: { ...prev[key], activa: true }
+                }));
+            }
+        } else {
+            updated = exists
+                ? current.filter(o => o !== option)
+                : [...current, option];
+        }
 
         setTempSummary({ ...tempSummary, [key]: updated });
     };
@@ -651,14 +676,14 @@ export default function InterfazPrincipal({ summary }) {
                     <h2> Configuración del cuestionario</h2>
 
                     {Object.entries(summary)
-                        .filter(([key]) => ["nombre", "camino", "retos", "herramientas"].includes(key))
+                        .filter(([key]) => ["nombre", "discapacidad", "retos", "herramientas"].includes(key))
                         .map(([key, value]) => (
                             <div className="config-section" key={key}>
                                 <div className="config-title-row">
                                     <h3>{key.charAt(0).toUpperCase() + key.slice(1)}</h3>
                                     <button
                                         className="modify-btn"
-                                        onClick={() => setEditingField(key)}
+                                        onClick={() => setEditingField(prev => (prev === key ? null : key))}
                                     >
                                         ✏️ Modificar
                                     </button>
@@ -668,13 +693,18 @@ export default function InterfazPrincipal({ summary }) {
                                 {key === "nombre" ? (
                                     <p>{tempSummary.nombre}</p>
                                 ) : (
-                                    <p>{Array.isArray(tempSummary[key]) ? tempSummary[key].join(", ") : tempSummary[key]}</p>
+                                    <p>{Array.isArray(tempSummary[key])
+                                        ? tempSummary[key]
+                                            .filter(item => item !== "Otra") // evitamos mostrar "Otra"
+                                            .map(getLabelForOption)
+                                            .join(", ")
+                                        : getLabelForOption(tempSummary[key])}
+                                    </p>
                                 )}
 
                                 {/* Campos de edición */}
                                 {editingField === key && (
                                     <div className="edit-options">
-
                                         {key === "nombre" ? (
                                             <input
                                                 type="text"
@@ -685,24 +715,78 @@ export default function InterfazPrincipal({ summary }) {
                                                     setTempSummary({ ...tempSummary, nombre: e.target.value })
                                                 }
                                             />
-
                                         ) : (
-                                            getOptionsForField(key).map(option => (
-                                                <label key={option} className="config-toggle-option">
-                                                    <span className="config-toggle-label">{getEmojiForOption(option)} {getLabelForOption(option)}</span>
-                                                    <label className="config-switch">
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={tempSummary[key]?.includes(option)}
-                                                            onChange={() => toggleOption(key, option)}
-                                                        />
-                                                        <span className="slider"></span>
+                                            <>
+                                                {getOptionsForField(key).map(option => (
+                                                    <label key={option} className="config-toggle-option">
+                                                        <span className="config-toggle-label">
+                                                            {getEmojiForOption(option)} {getLabelForOption(option)}
+                                                        </span>
+                                                        <label className="switch">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={tempSummary[key]?.includes(option)}
+                                                                onChange={() => {
+                                                                    toggleOption(key, option);
+                                                                    if (option === "Otra") {
+                                                                        const isNowChecked = !tempSummary[key]?.includes("Otra");
+                                                                        setOtraOpciones(prev => ({
+                                                                            ...prev,
+                                                                            [key]: {
+                                                                                ...prev[key],
+                                                                                activa: isNowChecked,
+                                                                                guardado: false,
+                                                                                valor: ""
+                                                                            }
+                                                                        }));
+                                                                    }
+                                                                }}
+                                                            />
+                                                            <span className="slider">
+                                                            </span>
+                                                        </label>
                                                     </label>
-                                                </label>
-                                            ))
+                                                ))}
+
+                                                {/* CAMPO DE TEXTO SI SE ACTIVA "OTRA" */}
+                                                {otraOpciones[key]?.activa && (
+                                                    <div className="other-input-container">
+                                                        <textarea
+                                                            className="custom-textarea"
+                                                            placeholder={`Introduce tu ${key === "discapacidad" ? "discapacidad" : "reto"}...`}
+                                                            value={otraOpciones[key].valor}
+                                                            onChange={(e) =>
+                                                                setOtraOpciones(prev => ({
+                                                                    ...prev,
+                                                                    [key]: { ...prev[key], valor: e.target.value }
+                                                                }))
+                                                            }
+                                                        ></textarea>
+
+                                                        <button
+                                                            className={`accept-btn ${otraOpciones[key].guardado ? "saved" : ""}`}
+                                                            onClick={() => {
+                                                                if (otraOpciones[key].valor.trim()) {
+                                                                    setTempSummary(prev => ({
+                                                                        ...prev,
+                                                                        [key]: [...prev[key], `Otra - ${otraOpciones[key].valor}`]
+                                                                    }));
+                                                                    setOtraOpciones(prev => ({
+                                                                        ...prev,
+                                                                        [key]: { ...prev[key], guardado: true }
+                                                                    }));
+                                                                }
+                                                            }}
+                                                        >
+                                                            {otraOpciones[key].guardado ? "✅ Guardado" : "✅ Guardar"}
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </>
                                         )}
                                     </div>
                                 )}
+
                             </div>
 
                         ))}
@@ -716,7 +800,7 @@ export default function InterfazPrincipal({ summary }) {
                         </button>
                         <button className="save-btn" onClick={() => {
                             Object.keys(summary).forEach(key => {
-                                if (["nombre", "camino", "retos", "herramientas"].includes(key)) {
+                                if (["nombre", "discapacidad", "retos", "herramientas"].includes(key)) {
                                     summary[key] = tempSummary[key];
                                 }
                             });
