@@ -544,7 +544,7 @@ body {
 
 
 /*=========================================
-*    OPCIÓN 4 - SELECCIÓN DE HERRAMIENTAS
+*    SELECCIÓN DE HERRAMIENTAS
 * =========================================*/
 
 
@@ -625,7 +625,7 @@ body {
 }
 
 /*====================================
-*    OPCIÓN 5 - RESUMEN CUESIONARIO
+*   RESUMEN CUESIONARIO
 * ====================================*/
 
 /* Contenedor de la página final */
@@ -1048,23 +1048,6 @@ body {
 *    INTERFAZ PRINCIPAL
 * ==================================*/
 
-/* DONDE SE GUARDA TODA LA CONVER*/
-.chat-wrapper {
-  position: relative;
-  display: flex;
-  height: 100%;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 20px;
-  align-items: center;
-}
-
-.chat-container {
-  display: flex;
-  width: 100%;
-}
-
-
 /* Estilo del título de la pregunta (mismo que los botones) */
 .question-title {
   font-size: 32px;
@@ -1171,9 +1154,25 @@ body {
 /*==================================
 *    FORMATO DE LA PREGUNTA A LA IA
 * ==================================*/
+/* DONDE SE GUARDA TODA LA CONVER*/
+.chat-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  max-width: 2000px;
+  /* Mantiene un ancho fijo y centrado */
+  margin: 0 auto;
+  padding: 20px 0;
+}
+
+.chat-container {
+  display: flex;
+  width: 100%;
+}
+
 .user-container {
   justify-content: flex-end;
-  padding-left: 200px;
 
 }
 
@@ -1225,7 +1224,6 @@ body {
 
 .ai-container {
   justify-content: flex-start;
-  padding-right: 20px;
 }
 
 /* Mensaje de la IA (respuesta) */
@@ -1242,6 +1240,7 @@ body {
   box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.2);
   font-size: 18px;
   margin: 10px 0;
+
 }
 
 /* Estilos para el estado de carga */
@@ -1303,6 +1302,7 @@ body {
 
 /* Estilo de los botones */
 .help-btn {
+
   margin-top: 10px;
   padding: 14px;
   font-size: 14px;
