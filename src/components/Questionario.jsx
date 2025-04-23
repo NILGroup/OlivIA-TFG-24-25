@@ -116,7 +116,6 @@ export default function Questionario({ onComplete }) {
     };
 
 
-
     // PÁGINA 4
     const toggleTool = (id) => {
         setSummary(prevSummary => ({
@@ -128,14 +127,6 @@ export default function Questionario({ onComplete }) {
 
     };
 
-    const toggleMostrarPorPartes = () => {
-        setPauseEnabled(!pauseEnabled);
-
-        setSummary(prevSummary => ({
-            ...prevSummary,
-            mostrarPorPartes: !pauseEnabled
-        }));
-    };
     const generateSummary = () => (
         <div className="summary-box-horizontal">
             <h3>Resumen de tu nueva compañera virtual:</h3>
@@ -193,7 +184,7 @@ export default function Questionario({ onComplete }) {
 
 
     /** ================================
-     *  HERRAMIENTAS (Drag & Drop)
+     *  HERRAMIENTAS 
      *  ================================
      */
 
@@ -203,83 +194,8 @@ export default function Questionario({ onComplete }) {
         { id: "bullet", label: "📒 Respuestas en bullets", color: "purple" },
         { id: "textocorto", label: "📃 Texto Corto", color: "blue" },
         { id: "frasescortas", label: "✂️ Frases cortas", color: "yellow" }
-        //{ id: "mostrarPorPartes", label: "📚 Mostrar información por partes", color: "orange" }  // NUEVA OPCIÓN
     ];
 
-    // Estado de herramientas seleccionadas
-    const [selectedTools, setSelectedTools] = useState([]);
-
-    // Función para iniciar el arrastre
-    const handleDragStart = (e, tool) => {
-        e.dataTransfer.setData("toolId", tool.id);
-    };
-
-    // Función para soltar herramienta en la "mochila"
-    const handleDrop = (e) => {
-        e.preventDefault();
-        const toolId = e.dataTransfer.getData("toolId");
-        if (!selectedTools.includes(toolId)) {
-            setSelectedTools([...selectedTools, toolId]);
-        }
-    };
-
-    // Remover una herramienta de la mochila
-    const handleRemoveTool = (toolId) => {
-        setSelectedTools(selectedTools.filter((id) => id !== toolId));
-    };
-
-    /** ===============================
-    *  OPCIONES DE AYUDA (Drag & Drop)
-    *  ================================
-    */
-
-    const helpOptions = [
-        { id: "definir", label: "📖 Definir palabras", color: "green" },
-        { id: "explicar", label: "💡 Explicar con ejemplos", color: "blue" },
-        { id: "resumen", label: "📑 Resumen corto", color: "purple" },
-    ];
-
-    // Estado de opciones de ayuda seleccionadas
-    const [selectedHelp, setSelectedHelp] = useState([]);
-
-    // Función para iniciar el arrastre de opciones de ayuda
-    const handleDragStartHelp = (e, option) => {
-        e.dataTransfer.setData("helpId", option.id);
-    };
-
-    // Función para soltar opción de ayuda en la "mochila"
-    const handleDropHelp = (e) => {
-        e.preventDefault();
-        const helpId = e.dataTransfer.getData("helpId");
-        if (!selectedHelp.includes(helpId)) {
-            setSelectedHelp([...selectedHelp, helpId]);
-        }
-    };
-
-    // Remover una opción de ayuda de la selección
-    const handleRemoveHelp = (helpId) => {
-        setSelectedHelp(selectedHelp.filter((id) => id !== helpId));
-    };
-
-    /** ==============================
-    *  OPCIONES DE VELOCIDAD DE HABLA
-    *  ===============================
-    */
-
-
-    const [selectedToggles, setSelectedToggles] = useState({});
-    const [pauseEnabled, setPauseEnabled] = useState(false);
-
-    const [speechRate, setSpeechRate] = useState(1); // Velocidad por defecto (normal)
-
-    // Función para probar la voz con la velocidad seleccionada
-    const speakTest = (rate) => {
-        const msg = new SpeechSynthesisUtterance();
-        msg.text = "Hola! esta es la velocidad a la que leería";
-        msg.lang = "es-ES";
-        msg.rate = rate;
-        window.speechSynthesis.speak(msg);
-    };
 
 
     /** ========================
@@ -583,7 +499,7 @@ export default function Questionario({ onComplete }) {
                                 <img src={robotLogoCuerpo} alt="Compañero Virtual" className="robot-img" />
                             </div>
 
-                            <h3 className="final-question">¿Quieres comenzar la aventura?</h3>
+                            <h3 className="final-question">¿Quieres conocer a tu nueva compañera?</h3>
 
                             <div className="button-group">
                                 <button className="final-btn gray" onClick={() => setPage(1)}>

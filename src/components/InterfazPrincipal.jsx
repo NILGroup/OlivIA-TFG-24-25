@@ -38,13 +38,11 @@ export default function InterfazPrincipal({ summary }) {
     const [selectedOption, setSelectedOption] = useState(null);
     // Controla el input de la pregunta del usuario
     const [prompt, setPrompt] = useState(""); // Separa el input del prompt final
-    // Guarda la respuesta generada por la IA
-    const [response, setResponse] = useState("");
     // Indica si la IA está procesando la respuesta
     const [loading, setLoading] = useState(false);
     // Controla si se está mostrando el chat (evita mostrar la pantalla inicial)
     const [showChat, setShowChat] = useState(false);
-    // Para lo de escuchar el texto
+    // el historial y conversacion que se mantiene con la IA
     const [chatFlow, setChatFlow] = useState([]);
 
 
@@ -266,12 +264,6 @@ export default function InterfazPrincipal({ summary }) {
 
         setTempSummary({ ...tempSummary, [key]: updated });
     };
-
-    const saveFieldChanges = (key) => {
-        summary[key] = tempSummary[key]; // Actualiza el objeto original
-        setEditingField(null);
-    };
-
 
 
     /** =================================
@@ -702,7 +694,7 @@ export default function InterfazPrincipal({ summary }) {
             )}
             {showConfig && (
                 <div className="config-panel">
-                    <h2> Configuración del cuestionario</h2>
+                    <h2>🔧 Configuración del cuestionario</h2>
 
                     {Object.entries(summary)
                         .filter(([key]) => ["nombre", "discapacidad", "retos", "herramientas"].includes(key))
