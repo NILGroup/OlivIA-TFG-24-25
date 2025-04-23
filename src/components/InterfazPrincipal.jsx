@@ -6,9 +6,9 @@ export default function InterfazPrincipal({ summary }) {
 
     const API_KEY = import.meta.env.VITE_GROQ_LLAMA_API_KEY;
 
-    /** ================================
+    /*==================================
     *    RESULTADO QUESTIONARIO
-    *  =================================
+    * ==================================
     */
 
     // Función para generar el prompt con la info del cuestionario
@@ -46,6 +46,7 @@ export default function InterfazPrincipal({ summary }) {
     const [showChat, setShowChat] = useState(false);
     // Para lo de escuchar el texto
     const [chatFlow, setChatFlow] = useState([]);
+
 
 
     /** ================================
@@ -150,6 +151,8 @@ export default function InterfazPrincipal({ summary }) {
        */
 
     const [showConfig, setShowConfig] = useState(false);
+    // guardado de configuracion brillate
+    const [savedEffect, setSavedEffect] = useState(false);
 
     // Lógica de edición
     const [editingField, setEditingField] = useState(null);
@@ -600,15 +603,16 @@ export default function InterfazPrincipal({ summary }) {
                     className={`config-btn ${showConfig ? "open" : "closed"}`}
                     onClick={() => setShowConfig(!showConfig)}
                 >
-                    {showConfig ? "⚙️ Cerrar Configuración" : "⚙️ Abrir Configuración"}
+                    {showConfig ? "⚙️ Cerrar Configuración" : "⚙️  Configuración"}
                 </button>
 
 
                 {/* Menú lateral del historial */}
                 <div className={`chat-history-sidebar ${showHistory ? "show" : "hide"}`}>
                     {chatHistory.length === 0 ? (
-                        <p>Aún no hay chats guardados.</p>
-                    ) : (
+                        <div className="no-chats-message">
+                            <h3>Aún no hay chats guardados.</h3>
+                        </div>) : (
                         <ul>
                             {chatHistory.map((entry, index) => (
                                 <li
@@ -683,119 +687,94 @@ export default function InterfazPrincipal({ summary }) {
 
                     {Object.entries(summary)
                         .filter(([key]) => ["nombre", "discapacidad", "retos", "herramientas"].includes(key))
-                        .map(([key, value]) => (
+                        .map(([key]) => (
                             <div className="config-section" key={key}>
                                 <div className="config-title-row">
                                     <h3>{key.charAt(0).toUpperCase() + key.slice(1)}</h3>
-                                    <button
-                                        className="modify-btn"
-                                        onClick={() => setEditingField(prev => (prev === key ? null : key))}
-                                    >
-                                        ✏️ Modificar
-                                    </button>
                                 </div>
 
-                                {/* Mostrar valor actual */}
-                                {key === "nombre" ? (
-                                    <p>{tempSummary.nombre}</p>
-                                ) : (
-                                    <p>{Array.isArray(tempSummary[key])
-                                        ? tempSummary[key]
-                                            .filter(item => item !== "Otra") // evitamos mostrar "Otra"
-                                            .map(getLabelForOption)
-                                            .join(", ")
-                                        : getLabelForOption(tempSummary[key])}
-                                    </p>
-                                )}
-
-                                {/* Campos de edición */}
-                                {editingField === key && (
-                                    <div className="edit-options">
-                                        {key === "nombre" ? (
-                                            <input
-                                                type="text"
-                                                className="nombre-input"
-                                                placeholder="Introduce tu nombre..."
-                                                value={tempSummary.nombre}
-                                                onChange={(e) =>
-                                                    setTempSummary({ ...tempSummary, nombre: e.target.value })
-                                                }
-                                            />
-                                        ) : (
-                                            <>
-                                                {getOptionsForField(key).map(option => (
-                                                    <label key={option} className="config-toggle-option">
-                                                        <span className="config-toggle-label">
-                                                            {getEmojiForOption(option)} {getLabelForOption(option)}
-                                                        </span>
-                                                        <label className="switch">
-                                                            <input
-                                                                type="checkbox"
-                                                                checked={tempSummary[key]?.includes(option)}
-                                                                onChange={() => {
-                                                                    toggleOption(key, option);
-                                                                    if (option === "Otra") {
-                                                                        const isNowChecked = !tempSummary[key]?.includes("Otra");
-                                                                        setOtraOpciones(prev => ({
-                                                                            ...prev,
-                                                                            [key]: {
-                                                                                ...prev[key],
-                                                                                activa: isNowChecked,
-                                                                                guardado: false,
-                                                                                valor: ""
-                                                                            }
-                                                                        }));
-                                                                    }
-                                                                }}
-                                                            />
-                                                            <span className="slider">
-                                                            </span>
-                                                        </label>
-                                                    </label>
-                                                ))}
-
-                                                {/* CAMPO DE TEXTO SI SE ACTIVA "OTRA" */}
-                                                {otraOpciones[key]?.activa && (
-                                                    <div className="other-input-container">
-                                                        <textarea
-                                                            className="custom-textarea"
-                                                            placeholder={`Introduce tu ${key === "discapacidad" ? "discapacidad" : "reto"}...`}
-                                                            value={otraOpciones[key].valor}
-                                                            onChange={(e) =>
-                                                                setOtraOpciones(prev => ({
-                                                                    ...prev,
-                                                                    [key]: { ...prev[key], valor: e.target.value }
-                                                                }))
-                                                            }
-                                                        ></textarea>
-
-                                                        <button
-                                                            className={`accept-btn ${otraOpciones[key].guardado ? "saved" : ""}`}
-                                                            onClick={() => {
-                                                                if (otraOpciones[key].valor.trim()) {
-                                                                    setTempSummary(prev => ({
-                                                                        ...prev,
-                                                                        [key]: [...prev[key], `Otra - ${otraOpciones[key].valor}`]
-                                                                    }));
+                                <div className="edit-options">
+                                    {key === "nombre" ? (
+                                        <input
+                                            type="text"
+                                            className="nombre-input"
+                                            placeholder="Introduce tu nombre..."
+                                            value={tempSummary.nombre}
+                                            onChange={(e) =>
+                                                setTempSummary({ ...tempSummary, nombre: e.target.value })
+                                            }
+                                        />
+                                    ) : (
+                                        <>
+                                            {getOptionsForField(key).map(option => (
+                                                <label key={option} className="config-toggle-option">
+                                                    <span className="config-toggle-label">
+                                                        {getEmojiForOption(option)} {getLabelForOption(option)}
+                                                    </span>
+                                                    <label className="switch">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={tempSummary[key]?.includes(option)}
+                                                            onChange={() => {
+                                                                toggleOption(key, option);
+                                                                if (option === "Otra") {
+                                                                    const isNowChecked = !tempSummary[key]?.includes("Otra");
                                                                     setOtraOpciones(prev => ({
                                                                         ...prev,
-                                                                        [key]: { ...prev[key], guardado: true }
+                                                                        [key]: {
+                                                                            ...prev[key],
+                                                                            activa: isNowChecked,
+                                                                            guardado: false,
+                                                                            valor: ""
+                                                                        }
                                                                     }));
                                                                 }
                                                             }}
-                                                        >
-                                                            {otraOpciones[key].guardado ? "✅ Guardado" : "✅ Guardar"}
-                                                        </button>
-                                                    </div>
-                                                )}
-                                            </>
-                                        )}
-                                    </div>
-                                )}
+                                                        />
+                                                        <span className="slider"></span>
+                                                    </label>
+                                                </label>
+                                            ))}
 
+                                            {otraOpciones[key]?.activa && (
+                                                <div className="other-input-container">
+                                                    <textarea
+                                                        className="custom-textarea"
+                                                        placeholder={`Introduce tu ${key === "discapacidad" ? "discapacidad" : "reto"}...`}
+                                                        value={otraOpciones[key].valor}
+                                                        onChange={(e) =>
+                                                            setOtraOpciones(prev => ({
+                                                                ...prev,
+                                                                [key]: { ...prev[key], valor: e.target.value }
+                                                            }))
+                                                        }
+                                                    ></textarea>
+
+                                                    <button
+                                                        className={`accept-btn ${otraOpciones[key].guardado ? "saved" : ""}`}
+                                                        onClick={() => {
+                                                            if (otraOpciones[key].valor.trim()) {
+                                                                setTempSummary(prev => ({
+                                                                    ...prev,
+                                                                    [key]: [...prev[key], `Otra - ${otraOpciones[key].valor}`]
+                                                                }));
+                                                                setOtraOpciones(prev => ({
+                                                                    ...prev,
+                                                                    [key]: { ...prev[key], guardado: true }
+                                                                }));
+                                                            }
+                                                        }}
+                                                    >
+                                                        {otraOpciones[key].guardado ? "✅ Guardado" : "✅ Guardar"}
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </>
+                                    )}
+                                </div>
                             </div>
-
                         ))}
+
 
                     <div className="edit-buttons-global">
                         <button className="cancel-btn" onClick={() => {
@@ -804,15 +783,25 @@ export default function InterfazPrincipal({ summary }) {
                         }}>
                             ❌ Descartar cambios
                         </button>
-                        <button className="save-btn" onClick={() => {
-                            Object.keys(summary).forEach(key => {
-                                if (["nombre", "discapacidad", "retos", "herramientas"].includes(key)) {
-                                    summary[key] = tempSummary[key];
-                                }
-                            });
-                            setEditingField(null);
-                        }}>
-                            ✅ Guardar cambios
+                        <button
+                            className={`save-btn ${savedEffect ? "saved-effect" : ""}`}
+                            onClick={() => {
+                                Object.keys(summary).forEach(key => {
+                                    if (["nombre", "discapacidad", "retos", "herramientas"].includes(key)) {
+                                        summary[key] = tempSummary[key];
+                                    }
+                                });
+
+                                // Activa animación
+                                setSavedEffect(true);
+
+                                // Luego de 2 segundos, desactiva efecto y vuelve a texto original si quieres
+                                setTimeout(() => {
+                                    setSavedEffect(false);
+                                }, 2000);
+                            }}
+                        >
+                            {savedEffect ? "✅ Cambios guardados" : "✅  Guardar cambios"}
                         </button>
                     </div>
 
@@ -983,6 +972,7 @@ export default function InterfazPrincipal({ summary }) {
                                     </button>
                                 </div>
                             </div>
+
                             {!showSimplificationOptions && (
                                 <div className="chat-container">
                                     <div className="custom-followup-box">
