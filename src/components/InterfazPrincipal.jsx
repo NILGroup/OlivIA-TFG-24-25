@@ -381,6 +381,15 @@ export default function InterfazPrincipal({ summary }) {
             { type: "user", content: displayPrompt },
             { type: "loading", content: "⌛ Cargando..." }
         ]);
+        // Construir historial de mensajes
+        const messages = chatFlow
+            .filter(entry => entry.type === "user" || entry.type === "ai")
+            .map(entry => ({
+                role: entry.type === "user" ? "user" : "assistant",
+                content: entry.content
+            }));
+
+        messages.push({ role: "user", content: apiPrompt });
 
         try {
             const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -391,7 +400,7 @@ export default function InterfazPrincipal({ summary }) {
                 },
                 body: JSON.stringify({
                     model: "meta-llama/llama-4-scout-17b-16e-instruct",
-                    messages: [{ role: "user", content: apiPrompt }],
+                    messages,
                     temperature: 0.7
                 }),
             });
@@ -445,6 +454,16 @@ export default function InterfazPrincipal({ summary }) {
         setChatFlow((prev) => [...prev, { type: "user", content: displayPrompt }]);
         setChatFlow((prev) => [...prev, { type: "loading", content: "⌛ Cargando..." }]);
 
+        // Agregar toda la conversación previa
+        const messages = chatFlow
+            .filter(entry => entry.type === "user" || entry.type === "ai")
+            .map(entry => ({
+                role: entry.type === "user" ? "user" : "assistant",
+                content: entry.content
+            }));
+
+        messages.push({ role: "user", content: apiPrompt });
+
         try {
             const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
                 method: "POST",
@@ -454,7 +473,7 @@ export default function InterfazPrincipal({ summary }) {
                 },
                 body: JSON.stringify({
                     model: "meta-llama/llama-4-scout-17b-16e-instruct",
-                    messages: [{ role: "user", content: apiPrompt }],
+                    messages,
                     temperature: 0.7
                 }),
             });
@@ -986,11 +1005,13 @@ export default function InterfazPrincipal({ summary }) {
                                         <button
                                             className="custom-followup-btn"
                                             onClick={async () => {
-                                                await sendPrompt();
+                                                await sendCustomPrompt(prompt);
                                                 setPrompt(""); // Limpia el campo tras enviar
                                             }}
                                         >
-                                            🔍 ¡Descubrir Respuesta!                                        </button>
+                                            🔍 ¡Descubrir Respuesta!
+                                        </button>
+
                                     </div>
                                 </div>
                             )}
