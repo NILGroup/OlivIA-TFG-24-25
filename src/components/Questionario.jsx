@@ -69,7 +69,7 @@ export default function Questionario({ onComplete }) {
      */
     const [summary, setSummary] = useState({
         nombre: "",            // Para el caso 1
-        discapacidad: [],            // Para el caso 2
+        discapacidad: [],      // Para el caso 2
         retos: [],             // Para el caso 3
         herramientas: [],      // Para el caso 4
         mostrarPorPartes: false // Para la opción "Mostrar por partes"

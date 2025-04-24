@@ -6,9 +6,9 @@ import robotLogo from "../assets/AventurIA_robot_sinfondo.png";
 export default function InterfazPrincipal({ summary }) {
 
 
-    /** ================================
-    *             ESTADOS
-    *  =================================
+    /** ===============================
+    *    ESTADOS PRINCIPALES Y DE CHAT
+    *  ================================
     */
 
     // Controla la opción seleccionada del menú de preguntas
@@ -23,10 +23,57 @@ export default function InterfazPrincipal({ summary }) {
     const [chatFlow, setChatFlow] = useState([]);
 
 
-    /** ================================
-    *   ESTADOS PARA BOTON DE REFORMULAR
-    *  =================================
+    /** ============================================
+     *  ESTADOS DE PREGUNTAS PARA HACER DISPONIBLES
+     *  ============================================
+     */
+    const options = [
+        { id: 1, text: "Dame un ejemplo de", color: "yellow" },
+        { id: 2, text: "Explícame con un ejemplo", color: "blue" },
+        { id: 3, text: "Resume en pocas palabras", color: "green" },
+        { id: 4, text: "¿Qué significa", color: "red", needsQuestionMark: true },
+        { id: 5, text: "Dame sinónimos de", color: "purple" },
+        { id: 6, text: "¿Cómo se hace", color: "orange", needsQuestionMark: true }
+    ];
+
+    const handleOptionClick = (option) => {
+        setSelectedOption(option);
+        setPrompt(""); // Vacía el input al cambiar de opción
+    };
+
+    const handleResetQuestion = () => {
+        setSelectedOption(null);
+        setPrompt("");
+    };
+
+
+    /** =====================================
+    *   ESTADOS PARA BOTONES DE RESPUESTA IA
+    *  ======================================
     */
+
+    // Método para limpiar las opciones cuando se genere una nueva pregunta
+    const resetHelpOptions = () => {
+        setShowHelpOptions(false);
+        setShowSimplificationOptions(false);
+        setShowTextInput(false);
+    };
+
+    //=== ESTADOS PARA BOTON DE RESUMEN Y EJEMPLO  ===
+    const [requestingSummary, setRequestingSummary] = useState(false);
+    const [requestingExample, setRequestingExample] = useState(false);
+
+
+    /** =========================================
+    *   ESTADOS Y LÓGICA PARA BOTON DE REFORMULAR
+    *  ==========================================
+    */
+
+    // Estado para controlar la visibilidad de las opciones adicionales
+    const [showSimplificationOptions, setShowSimplificationOptions] = useState(false);
+    const [showTextInput, setShowTextInput] = useState(false);
+    const [unknownWords, setUnknownWords] = useState("");
+
     // Método para manejar el toggle del cuadro de texto de sinónimos
     const toggleSynonymInput = () => {
         setShowTextInput(!showTextInput);
@@ -44,58 +91,94 @@ export default function InterfazPrincipal({ summary }) {
             setShowSimplificationOptions(true);
         }
     };
-
-    // Método para limpiar las opciones cuando se genere una nueva pregunta
-    const resetHelpOptions = () => {
-        setShowHelpOptions(false);
-        setShowSimplificationOptions(false);
-        setShowTextInput(false);
-    };
     // Método para cerrar todas las opciones adicionales
     const closeRedButtonOptions = () => {
         setShowSimplificationOptions(false); // Ocultar opciones adicionales
         setShowTextInput(false);             // Ocultar el cuadro de sinónimos
     };
 
-    // Función para obtener la última respuesta generada en el flujo del chat
-    const getLastAIResponse = () => {
-        const lastAIMessage = chatFlow
-            .slice()
-            .reverse()
-            .find(entry => entry.type === "ai");
 
-        return lastAIMessage ? lastAIMessage.content : "";
-    };
-
-
-    // Estado para controlar la visibilidad de las opciones adicionales
-    const [showSimplificationOptions, setShowSimplificationOptions] = useState(false);
-    const [showTextInput, setShowTextInput] = useState(false);
-    const [unknownWords, setUnknownWords] = useState("");
-
-    /** ================================
-     *  ESTADOS PARA OPCIONES DE AYUDA
-     *  ================================
+    /** ====================================
+     *  ESTADOS PARA BOTÓN DE "NO, GRACIAS"
+     *  ====================================
      */
     const [showHelpOptions, setShowHelpOptions] = useState(false); // Muestra botones de ayuda tras la respuesta
     const [showUsefulQuestion, setShowUsefulQuestion] = useState(false); // Pregunta si la respuesta fue útil
-    const [showInitialOptions, setShowInitialOptions] = useState(false); // Muestra las opciones iniciales después de responder
+    //const [showInitialOptions, setShowInitialOptions] = useState(false); // Muestra las opciones iniciales después de responder
     const [showConfirmationButton, setShowConfirmationButton] = useState(false);
 
-    // Estados para manejar botones de resumen y ejemplo
-    const [requestingSummary, setRequestingSummary] = useState(false);
-    const [requestingExample, setRequestingExample] = useState(false);
 
-    // Estado para almacenar el historial de chats
-    const [chatHistory, setChatHistory] = useState([]);
-    const [showHistory, setShowHistory] = useState(false); // Mostrar/ocultar historial
-    const [activeChat, setActiveChat] = useState(null); // Almacena el chat activo
-    const [isSavingChat, setIsSavingChat] = useState(false);
+    /** ========================================
+     *  ESTADOS Y LÓGICA PARA ESCUCHAR RESPUESTA
+     *  ========================================
+    */
 
     // Estado para cambiar el icono de reproducir respuesta
     const [speechState, setSpeechState] = useState("idle"); // idle | playing | paused
     const [activeSpeechId, setActiveSpeechId] = useState(null); // ID del mensaje que se está leyendo
 
+
+    // Función para leer texto en voz alta
+    const speakText = (text, id) => {
+        if (!text.trim()) {
+            alert("No hay texto para reproducir.");
+            return;
+        }
+
+        if (!window.speechSynthesis) {
+            alert("Tu navegador no soporta la síntesis de voz.");
+            return;
+        }
+
+        window.speechSynthesis.cancel();
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'es-ES';
+        utterance.rate = 1;
+        utterance.pitch = 1;
+
+        utterance.onstart = () => {
+            setActiveSpeechId(id);
+            setSpeechState("playing");
+        };
+        utterance.onend = () => {
+            setSpeechState("idle");
+            setActiveSpeechId(null);
+        };
+        utterance.onerror = () => {
+            setSpeechState("idle");
+            setActiveSpeechId(null);
+        };
+
+        window.speechSynthesis.speak(utterance);
+    };
+
+
+    const toggleSpeech = (text, id) => {
+        if (activeSpeechId !== id) {
+            speakText(text, id);
+        } else if (speechState === "playing") {
+            window.speechSynthesis.pause();
+            setSpeechState("paused");
+        } else if (speechState === "paused") {
+            window.speechSynthesis.resume();
+            setSpeechState("playing");
+        }
+    };
+    const [expandedResponses, setExpandedResponses] = useState({});
+
+    const toggleExpanded = (index) => {
+        setExpandedResponses((prev) => ({
+            ...prev,
+            [index]: !prev[index],
+        }));
+    };
+
+
+    /** ================================
+    *  ESTADOS PARA CARGAR A LOS PROMPTS
+    *  ================================
+    */
 
     const {
         sendPrompt,
@@ -122,19 +205,77 @@ export default function InterfazPrincipal({ summary }) {
         selectedOption
     });
 
+    /** ===================================
+     *  ESTADOS Y LÓGICA PARA EL HISTORIAL
+     *  ===================================
+     */
+
+    // Estado para almacenar el historial de chats
+    const [chatHistory, setChatHistory] = useState([]);
+    const [showHistory, setShowHistory] = useState(false); // Mostrar/ocultar historial
+    const [activeChat, setActiveChat] = useState(null); // Almacena el chat activo
+    const [isSavingChat, setIsSavingChat] = useState(false);
+
+    const toggleHistory = () => setShowHistory(!showHistory);
+
+
+    const saveChatToHistory = async (clearAfter = true) => {
+        if (chatFlow.length === 0) return;
+
+        setIsSavingChat(true);
+
+        const aiGeneratedTitle = await generateTitleFromChat();
+
+        if (activeChat) {
+            // Actualiza el historial activo
+            const updated = chatHistory.map(entry =>
+                entry === activeChat
+                    ? { ...entry, flow: [...chatFlow], timestamp: new Date().toLocaleString() }
+                    : { ...entry, isNew: false }
+            );
+            setChatHistory(updated);
+        } else {
+            // Solo si no hay historial activo, se crea uno nuevo
+            const chatEntry = {
+                title: aiGeneratedTitle,
+                flow: [...chatFlow],
+                timestamp: new Date().toLocaleString(),
+                isNew: true
+            };
+            setChatHistory([
+                ...chatHistory.map(entry => ({ ...entry, isNew: false })),
+                chatEntry
+            ]);
+        }
+
+        if (clearAfter) {
+            setShowUsefulQuestion(false);
+            setSelectedOption(null);
+            setPrompt("");
+            //setShowInitialOptions(false);
+            setShowChat(false);
+            setChatFlow([]);
+            setShowHistory(true);
+        }
+
+        setShowHelpOptions(true);
+        setIsSavingChat(false);
+    };
+
 
     /** ================================
-       *  ESTADOS PARA CONFIGURACIÓN
-       *  ================================
-       */
+    *  ESTADOS PARA CONFIGURACIÓN
+    *  ================================
+    */
 
     const [showConfig, setShowConfig] = useState(false);
     // guardado de configuracion brillate
     const [savedEffect, setSavedEffect] = useState(false);
 
-    // Lógica de edición
+    // === PARA EDITAR LO QUE YA ESTABA SELECCIONADO ANTERIORMENTE EN EL CUESIONARIO ===
     const [editingField, setEditingField] = useState(null);
     const [tempSummary, setTempSummary] = useState({ ...summary });
+
     const [otraOpciones, setOtraOpciones] = useState({
         discapacidad: { activa: false, valor: "", guardado: false },
         retos: { activa: false, valor: "", guardado: false }
@@ -211,7 +352,7 @@ export default function InterfazPrincipal({ summary }) {
         return emojis[option] || "🔧";
     };
 
-
+    // PARA PODER AÑADIR OTRA QUE NO ESTE EN LOS TOGGLES
     const toggleOption = (key, option) => {
         const current = tempSummary[key] || [];
         const exists = current.includes(option);
@@ -243,132 +384,6 @@ export default function InterfazPrincipal({ summary }) {
         }
 
         setTempSummary({ ...tempSummary, [key]: updated });
-    };
-
-
-    /** =================================
-     *  OPCIONES DE PREGUNTAS DISPONIBLES
-     *  =================================
-     */
-    const options = [
-        { id: 1, text: "Dame un ejemplo de", color: "yellow" },
-        { id: 2, text: "Explícame con un ejemplo", color: "blue" },
-        { id: 3, text: "Resume en pocas palabras", color: "green" },
-        { id: 4, text: "¿Qué significa", color: "red", needsQuestionMark: true },
-        { id: 5, text: "Dame sinónimos de", color: "purple" },
-        { id: 6, text: "¿Cómo se hace", color: "orange", needsQuestionMark: true }
-    ];
-
-    const handleOptionClick = (option) => {
-        setSelectedOption(option);
-        setPrompt(""); // Vacía el input al cambiar de opción
-    };
-
-    const handleResetQuestion = () => {
-        setSelectedOption(null);
-        setPrompt("");
-    };
-
-    // Función para leer texto en voz alta
-    const speakText = (text, id) => {
-        if (!text.trim()) {
-            alert("No hay texto para reproducir.");
-            return;
-        }
-
-        if (!window.speechSynthesis) {
-            alert("Tu navegador no soporta la síntesis de voz.");
-            return;
-        }
-
-        window.speechSynthesis.cancel();
-
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'es-ES';
-        utterance.rate = 1;
-        utterance.pitch = 1;
-
-        utterance.onstart = () => {
-            setActiveSpeechId(id);
-            setSpeechState("playing");
-        };
-        utterance.onend = () => {
-            setSpeechState("idle");
-            setActiveSpeechId(null);
-        };
-        utterance.onerror = () => {
-            setSpeechState("idle");
-            setActiveSpeechId(null);
-        };
-
-        window.speechSynthesis.speak(utterance);
-    };
-
-
-    const toggleSpeech = (text, id) => {
-        if (activeSpeechId !== id) {
-            speakText(text, id);
-        } else if (speechState === "playing") {
-            window.speechSynthesis.pause();
-            setSpeechState("paused");
-        } else if (speechState === "paused") {
-            window.speechSynthesis.resume();
-            setSpeechState("playing");
-        }
-    };
-    const [expandedResponses, setExpandedResponses] = useState({});
-
-    const toggleExpanded = (index) => {
-        setExpandedResponses((prev) => ({
-            ...prev,
-            [index]: !prev[index],
-        }));
-    };
-
-    // BOTON PREGUNTA POST GENERAR RESPUESTA - Guardar chat en historial y empezar de nuevo
-    const toggleHistory = () => setShowHistory(!showHistory);
-
-    const saveChatToHistory = async (clearAfter = true) => {
-        if (chatFlow.length === 0) return;
-
-        setIsSavingChat(true);
-
-        const aiGeneratedTitle = await generateTitleFromChat();
-
-        if (activeChat) {
-            // Actualiza el historial activo
-            const updated = chatHistory.map(entry =>
-                entry === activeChat
-                    ? { ...entry, flow: [...chatFlow], timestamp: new Date().toLocaleString() }
-                    : { ...entry, isNew: false }
-            );
-            setChatHistory(updated);
-        } else {
-            // Solo si no hay historial activo, se crea uno nuevo
-            const chatEntry = {
-                title: aiGeneratedTitle,
-                flow: [...chatFlow],
-                timestamp: new Date().toLocaleString(),
-                isNew: true
-            };
-            setChatHistory([
-                ...chatHistory.map(entry => ({ ...entry, isNew: false })),
-                chatEntry
-            ]);
-        }
-
-        if (clearAfter) {
-            setShowUsefulQuestion(false);
-            setSelectedOption(null);
-            setPrompt("");
-            setShowInitialOptions(false);
-            setShowChat(false);
-            setChatFlow([]);
-            setShowHistory(true);
-        }
-
-        setShowHelpOptions(true);
-        setIsSavingChat(false);
     };
 
     /** ================================

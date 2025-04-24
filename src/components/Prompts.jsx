@@ -52,7 +52,7 @@ const usePromptFunctions = ({
     };
 
 
-    /* FETCH DE GROQ - IA DE META LLAMA 4*/
+    /* === FETCH DE GROQ - IA DE META LLAMA 4 === */
     const fetchFromGroq = (messages) => {
         return fetchIA({
             url: "https://api.groq.com/openai/v1/chat/completions",
@@ -64,11 +64,22 @@ const usePromptFunctions = ({
 
     // AQUI SE AÑADARÍAN OTROS FETCH DE OTRAS API 
     // LUEGO EN LOS PROMPT, DEPENDIENDO DE CUAL QUEREMOS USAR, LLAMAMOS A UN FETCH O A OTRO
+    /*POR EJEMPLO:
+        const fetchFromOpenAI = (messages) => {
+        return fetchIA({
+          url: "https://api.openai.com/v1/chat/completions",
+          model: "gpt-4",
+          apiKey: import.meta.env.VITE_OPENAI_API_KEY,
+          messages
+        });
+      };
+    */
 
     /*====================================
     *    FUNCIONES GENERADORAS DE PROMPT
     * ====================================*/
 
+    // PERSONALIZACIÓN DE RESPUESTA DE LA IA
     const buildPrompt = useCallback((promptText) => {
         if (!summary) return promptText;
 
