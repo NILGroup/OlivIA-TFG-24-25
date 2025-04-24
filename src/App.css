@@ -1204,7 +1204,7 @@ body {
   display: block;
   margin: 20px auto;
   background: #4caf50;
-  color: white;
+  color: rgb(0, 0, 0);
   padding: 12px 20px;
   font-size: 25px;
   border: none;

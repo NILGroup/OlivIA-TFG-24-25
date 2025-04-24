@@ -1,32 +1,9 @@
 import { useState } from "react";
+import usePromptFunctions from "./Prompts";
 import ReactMarkdown from "react-markdown";
 import robotLogo from "../assets/AventurIA_robot_sinfondo.png";
 
 export default function InterfazPrincipal({ summary }) {
-
-    const API_KEY = import.meta.env.VITE_GROQ_LLAMA_API_KEY;
-
-    /*==================================
-    *    RESULTADO QUESTIONARIO
-    * ==================================
-    */
-
-    // Función para generar el prompt con la info del cuestionario
-    const buildPrompt = (promptText) => {
-        if (!summary) return promptText;
-
-        const personalInfo = `
-        Pero ten en cuenta estas instrucciones al responder:
-        - Mi Discapacidad: ${summary.discapacidad.join(", ") || "Ninguna"}
-        - NO uses: ${summary.retos.join(", ") || "Ninguna"}
-        - Quiero que me generes la repsuesta usando: ${summary.herramientas.join(", ") || "Ninguna"}
-        `;
-
-        return {
-            displayPrompt: promptText,       // Lo que se mostrará en pantalla
-            apiPrompt: `Hola, respondeme a esta pregunta: ${promptText}\n${personalInfo}` // Lo que se enviará a la API
-        };
-    };
 
 
     /** ================================
@@ -44,7 +21,6 @@ export default function InterfazPrincipal({ summary }) {
     const [showChat, setShowChat] = useState(false);
     // el historial y conversacion que se mantiene con la IA
     const [chatFlow, setChatFlow] = useState([]);
-
 
 
     /** ================================
@@ -97,29 +73,6 @@ export default function InterfazPrincipal({ summary }) {
     const [showTextInput, setShowTextInput] = useState(false);
     const [unknownWords, setUnknownWords] = useState("");
 
-    // Método para reformular toda la respuesta
-    const requestSimplifiedResponse = () => {
-        const lastResponse = getLastAIResponse();
-        if (!lastResponse.trim()) return;
-
-        const simplifiedPrompt = `"${lastResponse}"`;
-        sendCustomPrompt(simplifiedPrompt, "Reformular de la manera más sencilla y corta posible", "Reformular toda la respuesta");
-
-        setShowSimplificationOptions(false);
-    };
-
-    // Método para solicitar sinónimos 
-    const requestSynonyms = (words) => {
-        if (words.trim()) {
-            const synonymPrompt = `${words}`;
-            sendCustomPrompt(synonymPrompt, "Dame un sinónimo y una definición corta y muy sencilla de", `Dame sinónimos de ${synonymPrompt}`);
-            setShowTextInput(false);  // Ocultar el cuadro de texto
-        } else {
-            alert("Por favor, escribe algunas palabras para buscar sinónimos.");
-        }
-    };
-
-
     /** ================================
      *  ESTADOS PARA OPCIONES DE AYUDA
      *  ================================
@@ -142,6 +95,33 @@ export default function InterfazPrincipal({ summary }) {
     // Estado para cambiar el icono de reproducir respuesta
     const [speechState, setSpeechState] = useState("idle"); // idle | playing | paused
     const [activeSpeechId, setActiveSpeechId] = useState(null); // ID del mensaje que se está leyendo
+
+
+    const {
+        sendPrompt,
+        sendCustomPrompt,
+        requestSummary,
+        requestExample,
+        requestSimplifiedResponse,
+        requestSynonyms,
+        generateTitleFromChat
+    } = usePromptFunctions({
+        summary,
+        chatFlow,
+        setChatFlow,
+        setPrompt,
+        setLoading,
+        setShowChat,
+        setShowHelpOptions,
+        setShowSimplificationOptions,
+        setShowTextInput,
+        resetHelpOptions,
+        setActiveSpeechId,
+        setSpeechState,
+        prompt,
+        selectedOption
+    });
+
 
     /** ================================
        *  ESTADOS PARA CONFIGURACIÓN
@@ -345,206 +325,8 @@ export default function InterfazPrincipal({ summary }) {
         }));
     };
 
-    // Para el primer prompt
-    const sendPrompt = async () => {
-
-        if (!prompt.trim()) return;
-
-        window.speechSynthesis.cancel(); // Detiene cualquier lectura activa
-        setActiveSpeechId(null);         // Resetea el ID del mensaje leído
-        setSpeechState("idle");          // Estado de la voz a reposo
-        resetHelpOptions(); // Se asegura que se limpien las opciones adicionales
-
-        setShowUsefulQuestion(false);
-        setShowConfirmationButton(false);
-        setLoading(true);
-        setShowChat(true);
-        setShowHelpOptions(false);
-
-
-        const { displayPrompt, apiPrompt } = buildPrompt(
-            selectedOption?.id && selectedOption.id <= 6
-                ? `${selectedOption.text} ${prompt}${selectedOption.needsQuestionMark ? "?" : ""}`
-                : prompt
-        );
-
-        setChatFlow((prev) => [
-            ...prev,
-            { type: "user", content: displayPrompt },
-            { type: "loading", content: "⌛ Cargando..." }
-        ]);
-        // Construir historial de mensajes
-        const messages = chatFlow
-            .filter(entry => entry.type === "user" || entry.type === "ai")
-            .map(entry => ({
-                role: entry.type === "user" ? "user" : "assistant",
-                content: entry.content
-            }));
-
-        messages.push({ role: "user", content: apiPrompt });
-
-        try {
-            const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${API_KEY}`,
-                },
-                body: JSON.stringify({
-                    model: "meta-llama/llama-4-scout-17b-16e-instruct",
-                    messages,
-                    temperature: 0.7
-                }),
-            });
-
-
-            const data = await res.json();
-            //     Eliminar el mensaje de "⌛ Cargando..."
-            setChatFlow((prev) => prev.filter(entry => entry.type !== "loading"));
-
-            // Añadir la respuesta al flujo del chat
-            setChatFlow((prev) => [
-                ...prev,
-                { type: "ai", content: data.choices?.[0]?.message?.content || "Sin respuesta :(" }
-            ]);
-
-            setShowHelpOptions(true);
-            // await saveChatToHistory(false);
-
-        } catch (error) {
-            console.error("Error obteniendo respuesta:", error);
-
-            // Eliminar el mensaje de "⌛ Cargando..." en caso de error
-            setChatFlow((prev) => prev.filter(entry => entry.type !== "loading"));
-
-            setChatFlow((prev) => [
-                ...prev,
-                { type: "ai", content: "Error al obtener la respuesta" }
-            ]);
-
-        }
-        setLoading(false);
-        setPrompt("");
-    };
-
-    const sendCustomPrompt = async (customPrompt, context = "", displayOverride = null) => {
-        if (!customPrompt.trim()) return;
-        window.speechSynthesis.cancel(); // Detiene cualquier lectura activa
-        setActiveSpeechId(null);         // Resetea el ID del mensaje leído
-        setSpeechState("idle");          // Estado de la voz a reposo
-
-        resetHelpOptions();
-        setLoading(true);
-        setShowChat(true);
-
-        const { apiPrompt } = buildPrompt(
-            context ? `${context} ${customPrompt}` : customPrompt
-        );
-
-        const displayPrompt = displayOverride || customPrompt;
-
-        setChatFlow((prev) => [...prev, { type: "user", content: displayPrompt }]);
-        setChatFlow((prev) => [...prev, { type: "loading", content: "⌛ Cargando..." }]);
-
-        // Agregar toda la conversación previa
-        const messages = chatFlow
-            .filter(entry => entry.type === "user" || entry.type === "ai")
-            .map(entry => ({
-                role: entry.type === "user" ? "user" : "assistant",
-                content: entry.content
-            }));
-
-        messages.push({ role: "user", content: apiPrompt });
-
-        try {
-            const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${API_KEY}`,
-                },
-                body: JSON.stringify({
-                    model: "meta-llama/llama-4-scout-17b-16e-instruct",
-                    messages,
-                    temperature: 0.7
-                }),
-            });
-
-
-            const data = await res.json();
-            setChatFlow((prev) => prev.filter(entry => entry.type !== "loading"));
-            setChatFlow((prev) => [
-                ...prev,
-                { type: "ai", content: data.choices?.[0]?.message?.content || "Sin respuesta :(" }
-            ]);
-            setShowHelpOptions(true);
-            // await saveChatToHistory(false);
-        } catch (error) {
-            console.error("Error obteniendo respuesta:", error);
-            setChatFlow((prev) => prev.filter(entry => entry.type !== "loading"));
-            setChatFlow((prev) => [
-                ...prev,
-                { type: "ai", content: "Error al obtener la respuesta." }
-            ]);
-        }
-
-        setLoading(false);
-    };
-
-
-
-    const requestSummary = async () => {
-        const lastResponse = getLastAIResponse();
-        if (!lastResponse.trim()) return;
-
-        await sendCustomPrompt(lastResponse, "Resumir el siguiente texto:", "Dame un resumen");
-    };
-
-    const requestExample = async () => {
-        const lastResponse = getLastAIResponse();
-        if (!lastResponse.trim()) return;
-
-        await sendCustomPrompt(lastResponse, "Dame un ejemplo del siguiente texto:", "Explícame con un ejemplo");
-    };
-
-
     // BOTON PREGUNTA POST GENERAR RESPUESTA - Guardar chat en historial y empezar de nuevo
     const toggleHistory = () => setShowHistory(!showHistory);
-
-
-    const generateTitleFromChat = async () => {
-        const conversation = chatFlow
-            .filter(entry => entry.type === "user" || entry.type === "ai")
-            .map(entry => `${entry.type === "user" ? "Usuario" : "IA"}: ${entry.content}`)
-            .join("\n");
-
-        const prompt = `Lee esta conversación y dime un título corto (máximo 7 palabras) que represente de qué se trata. No uses comillas, ni hagas una frase larga:\n\n${conversation}`;
-
-        try {
-            const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${API_KEY}`,
-                },
-                body: JSON.stringify({
-                    model: "meta-llama/llama-4-scout-17b-16e-instruct",
-                    messages: [{ role: "user", content: prompt }],
-                    temperature: 0.7
-                }),
-            });
-
-
-            const data = await res.json();
-            const aiTitle = data.choices?.[0]?.message?.content?.trim();
-
-            return aiTitle || "Conversación guardada";
-        } catch (error) {
-            console.error("Error generando título:", error);
-            return "Conversación guardada";
-        }
-    };
-
 
     const saveChatToHistory = async (clearAfter = true) => {
         if (chatFlow.length === 0) return;
@@ -853,9 +635,10 @@ export default function InterfazPrincipal({ summary }) {
                             value={prompt}
                             onChange={(e) => setPrompt(e.target.value)}
                         />
-                        <button className="discover-btn" onClick={sendPrompt}>
+                        <button className="discover-btn" onClick={() => sendPrompt(prompt, selectedOption)}>
                             🔍 ¡Descubrir Respuesta!
                         </button>
+
                     </div>
 
                 </>
