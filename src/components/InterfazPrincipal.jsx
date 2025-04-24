@@ -1,5 +1,8 @@
 import { useState } from "react";
 import usePromptFunctions from "./Prompts";
+import ConfigPanel from "./ConfigPanel";
+import ChatHistory from "./ChatHistory";
+
 import ReactMarkdown from "react-markdown";
 import robotLogo from "../assets/AventurIA_robot_sinfondo.png";
 
@@ -281,111 +284,6 @@ export default function InterfazPrincipal({ summary }) {
         retos: { activa: false, valor: "", guardado: false }
     });
 
-    const getOptionsForField = (key) => {
-        const options = {
-            nombre: [], // No necesitas opciones para nombre, ya es campo libre
-
-            discapacidad: [
-                "TEA",
-                "Dislexia",
-                "TDAH",
-                "Memoria",
-                "Prefiero no responder",
-                "Otra" // se puede agregar dinámicamente cuando se escribe en el textarea
-            ],
-
-            retos: [
-                "Textos Largos",
-                "Palabras Dificiles",
-                "Organizar Ideas",
-                "Mantener Atencion",
-                "Memoria",
-                "Otra"
-            ],
-
-            herramientas: [
-                "ejemplo",       // 🖋️ Usar ejemplos
-                "bullet",        // 📒 Respuestas en bullets
-                "textocorto",    // 📃 Texto corto
-                "frasescortas"   // ✂️ Frases cortas
-            ]
-        };
-
-        return options[key] || [];
-    };
-
-    const getLabelForOption = (option) => {
-        const labels = {
-            "TEA": "TEA",
-            "Dislexia": "Dislexia",
-            "TDAH": "TDAH",
-            "Memoria": "Memoria",
-            "Prefiero no responder": "Prefiero no responder",
-            "Textos Largos": "Textos largos",
-            "Palabras Dificiles": "Palabras difíciles",
-            "Organizar Ideas": "Organizar ideas",
-            "Mantener Atencion": "Mantener la atención",
-            "ejemplo": "Usar ejemplos",
-            "bullet": "Respuestas en bullets",
-            "textocorto": "Texto corto",
-            "frasescortas": "Frases cortas"
-        };
-        return labels[option] || option;
-    };
-
-    const getEmojiForOption = (option) => {
-        const emojis = {
-            "TEA": "🧩",
-            "Dislexia": "🔠",
-            "TDAH": "⚡",
-            "Memoria": "🧠",
-            "Prefiero no responder": "❌",
-            "Textos Largos": "📖",
-            "Palabras Dificiles": "🧩",
-            "Organizar Ideas": "📝",
-            "Mantener Atencion": "🎯",
-            "ejemplo": "🖋️",
-            "bullet": "📒",
-            "textocorto": "📃",
-            "frasescortas": "✂️"
-        };
-        return emojis[option] || "🔧";
-    };
-
-    // PARA PODER AÑADIR OTRA QUE NO ESTE EN LOS TOGGLES
-    const toggleOption = (key, option) => {
-        const current = tempSummary[key] || [];
-        const exists = current.includes(option);
-
-        let updated;
-
-        if (option === "Otra") {
-            if (exists) {
-                // Se está apagando "Otra" -> quitamos cualquier opción "Otra - ..."
-                updated = current.filter(o => !o.startsWith("Otra -") && o !== "Otra");
-
-                setOtraOpciones(prev => ({
-                    ...prev,
-                    [key]: { activa: false, valor: "", guardado: false }
-                }));
-            } else {
-                // Se está activando "Otra"
-                updated = [...current, option];
-
-                setOtraOpciones(prev => ({
-                    ...prev,
-                    [key]: { ...prev[key], activa: true }
-                }));
-            }
-        } else {
-            updated = exists
-                ? current.filter(o => o !== option)
-                : [...current, option];
-        }
-
-        setTempSummary({ ...tempSummary, [key]: updated });
-    };
-
     /** ================================
      *     RETORNO DE LA INTERFAZ 
      *  ================================
@@ -395,7 +293,7 @@ export default function InterfazPrincipal({ summary }) {
 
         <div className="app-wrapper">
             <div className="header-bar">
-
+                OlivIA
 
                 <button
                     className={`history-btn ${showHistory ? "open" : "closed"}`}
@@ -403,7 +301,6 @@ export default function InterfazPrincipal({ summary }) {
                 >
                     {showHistory ? "📁 Cerrar Historial" : "📂 Abrir Historial"}
                 </button>
-                OlivIA
 
                 <button
                     className={`config-btn ${showConfig ? "open" : "closed"}`}
@@ -412,69 +309,33 @@ export default function InterfazPrincipal({ summary }) {
                     {showConfig ? "⚙️ Cerrar Configuración" : "⚙️  Configuración"}
                 </button>
 
+                {/*LÓGICA HISTORIAL*/}
+                <ChatHistory
+                    showHistory={showHistory}
+                    chatHistory={chatHistory}
+                    activeChat={activeChat}
+                    chatFlow={chatFlow}
+                    setActiveChat={setActiveChat}
+                    setChatFlow={setChatFlow}
+                    setShowChat={setShowChat}
+                    setShowHelpOptions={setShowHelpOptions}
+                    setChatHistory={setChatHistory}
+                />
 
-                {/* Menú lateral del historial */}
-                <div className={`chat-history-sidebar ${showHistory ? "show" : "hide"}`}>
-                    {chatHistory.length === 0 ? (
-                        <div className="no-chats-message">
-                            <h3>Aún no hay chats guardados.</h3>
-                        </div>) : (
-                        <ul>
-                            {chatHistory.map((entry, index) => (
-                                <li
-                                    key={index}
-                                    className={`chat-bubble ${entry.isNew ? "new-entry" : ""}`}
-                                >
-                                    <div className="chat-preview">
-                                        {entry.title || "Chat sin título"}
-                                    </div>
-
-                                    <div className="chat-timestamp">
-                                        <small>{entry.timestamp}</small>
-                                    </div>
-                                    {/* Botón para abrir o cerrar el chat */}
-                                    {activeChat === entry ? (
-                                        <button
-                                            className="help-btn blue"
-                                            onClick={async () => {
-                                                if (activeChat) {
-                                                    // Guarda los cambios antes de cerrar
-                                                    const updated = chatHistory.map(entry =>
-                                                        entry === activeChat
-                                                            ? { ...entry, flow: [...chatFlow], timestamp: new Date().toLocaleString() }
-                                                            : entry
-                                                    );
-                                                    setChatHistory(updated);
-                                                }
-
-                                                setActiveChat(null);
-                                                setChatFlow([]);
-                                                setShowChat(false);
-                                            }}
-                                        >
-                                            📁 Cerrar chat
-                                        </button>
-
-                                    ) : (
-                                        <button
-                                            className="help-btn blue"
-                                            onClick={() => {
-                                                setActiveChat(entry);
-                                                setChatFlow([...entry.flow]); // Restaura el flujo completo del chat
-                                                setShowChat(true);
-                                                setShowHelpOptions(true);
-                                            }}
-                                        >
-                                            📂 Abrir chat
-                                        </button>
-
-                                    )}
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </div>
             </div>
+            {/*LÓGICA CONFIGURACIÓN*/}
+            {showConfig && (
+                <ConfigPanel
+                    summary={summary}
+                    tempSummary={tempSummary}
+                    setTempSummary={setTempSummary}
+                    otraOpciones={otraOpciones}
+                    setOtraOpciones={setOtraOpciones}
+                    savedEffect={savedEffect}
+                    setSavedEffect={setSavedEffect}
+                    setEditingField={setEditingField}
+                />
+            )}
             {activeChat && (
                 <div className="chat-wrapper">
                     <div className="chat-container">
@@ -487,132 +348,8 @@ export default function InterfazPrincipal({ summary }) {
                     </div>
                 </div>
             )}
-            {showConfig && (
-                <div className="config-panel">
-                    <h2>🔧 Configuración del cuestionario</h2>
-
-                    {Object.entries(summary)
-                        .filter(([key]) => ["nombre", "discapacidad", "retos", "herramientas"].includes(key))
-                        .map(([key]) => (
-                            <div className="config-section" key={key}>
-                                <div className="config-title-row">
-                                    <h3>{key.charAt(0).toUpperCase() + key.slice(1)}</h3>
-                                </div>
-
-                                <div className="edit-options">
-                                    {key === "nombre" ? (
-                                        <input
-                                            type="text"
-                                            className="nombre-input"
-                                            placeholder="Introduce tu nombre..."
-                                            value={tempSummary.nombre}
-                                            onChange={(e) =>
-                                                setTempSummary({ ...tempSummary, nombre: e.target.value })
-                                            }
-                                        />
-                                    ) : (
-                                        <>
-                                            {getOptionsForField(key).map(option => (
-                                                <label key={option} className="config-toggle-option">
-                                                    <span className="config-toggle-label">
-                                                        {getEmojiForOption(option)} {getLabelForOption(option)}
-                                                    </span>
-                                                    <label className="switch">
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={tempSummary[key]?.includes(option)}
-                                                            onChange={() => {
-                                                                toggleOption(key, option);
-                                                                if (option === "Otra") {
-                                                                    const isNowChecked = !tempSummary[key]?.includes("Otra");
-                                                                    setOtraOpciones(prev => ({
-                                                                        ...prev,
-                                                                        [key]: {
-                                                                            ...prev[key],
-                                                                            activa: isNowChecked,
-                                                                            guardado: false,
-                                                                            valor: ""
-                                                                        }
-                                                                    }));
-                                                                }
-                                                            }}
-                                                        />
-                                                        <span className="slider"></span>
-                                                    </label>
-                                                </label>
-                                            ))}
-
-                                            {otraOpciones[key]?.activa && (
-                                                <div className="other-input-container">
-                                                    <textarea
-                                                        className="custom-textarea"
-                                                        placeholder={`Introduce tu ${key === "discapacidad" ? "discapacidad" : "reto"}...`}
-                                                        value={otraOpciones[key].valor}
-                                                        onChange={(e) =>
-                                                            setOtraOpciones(prev => ({
-                                                                ...prev,
-                                                                [key]: { ...prev[key], valor: e.target.value }
-                                                            }))
-                                                        }
-                                                    ></textarea>
-
-                                                    <button
-                                                        className={`accept-btn ${otraOpciones[key].guardado ? "saved" : ""}`}
-                                                        onClick={() => {
-                                                            if (otraOpciones[key].valor.trim()) {
-                                                                setTempSummary(prev => ({
-                                                                    ...prev,
-                                                                    [key]: [...prev[key], `Otra - ${otraOpciones[key].valor}`]
-                                                                }));
-                                                                setOtraOpciones(prev => ({
-                                                                    ...prev,
-                                                                    [key]: { ...prev[key], guardado: true }
-                                                                }));
-                                                            }
-                                                        }}
-                                                    >
-                                                        {otraOpciones[key].guardado ? "✅ Guardado" : "✅ Guardar"}
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
 
 
-                    <div className="edit-buttons-global">
-                        <button className="cancel-btn" onClick={() => {
-                            setTempSummary({ ...summary });
-                            setEditingField(null);
-                        }}>
-                            ❌ Descartar cambios
-                        </button>
-                        <button
-                            className={`save-btn ${savedEffect ? "saved-effect" : ""}`}
-                            onClick={() => {
-                                Object.keys(summary).forEach(key => {
-                                    if (["nombre", "discapacidad", "retos", "herramientas"].includes(key)) {
-                                        summary[key] = tempSummary[key];
-                                    }
-                                });
-
-                                // Activa animación
-                                setSavedEffect(true);
-
-                                // Luego de 2 segundos, desactiva efecto y vuelve a texto original si quieres
-                                setTimeout(() => {
-                                    setSavedEffect(false);
-                                }, 2000);
-                            }}
-                        >
-                            {savedEffect ? "✅ Cambios guardados" : "✅  Guardar cambios"}
-                        </button>
-                    </div>
-
-                </div>
-            )}
 
             {!showChat ? (
                 <>
