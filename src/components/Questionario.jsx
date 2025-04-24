@@ -42,6 +42,27 @@ export default function Questionario({ onComplete }) {
     });
 
 
+    /** =========================
+      *  NAVEGACIÓN ENTRE PÁGINAS
+      *  ========================
+      */
+
+    // Función para avanzar a la siguiente página
+    const nextPage = () => {
+        if (page < 5) {
+            setPage(page + 1);
+        } else {
+            onComplete(); // Termina el cuestionario y vuelve a la interfaz principal
+        }
+    };
+
+    // Función para retroceder a la página anterior
+    const prevPage = () => {
+        if (page > 1) {
+            setPage(page - 1);
+        }
+    };
+
     /** ============================================
      *  ALMACENAMIENTO DE SELECCIÓN DEL CUESTIONARIO
      *  ============================================
@@ -127,17 +148,18 @@ export default function Questionario({ onComplete }) {
 
     };
 
+    // PÁGINA 5
     const generateSummary = () => (
         <div className="summary-box-horizontal">
             <h3>Resumen de tu nueva compañera virtual:</h3>
 
-            {/* Nombre */}
+            {/* Nombre (PÁGINA 1)*/}
             <div className="summary-row">
                 <span className="summary-title">🧑 Tu nombre:</span>
                 <span className="summary-data">{summary.nombre || "No indicado"}</span>
             </div>
 
-            {/* Identificación */}
+            {/* Identificación (PÁGINA 2)*/}
             <div className="summary-row">
                 <span className="summary-title">⭐ Te identificas con:</span>
                 <ul className="summary-bubbles">
@@ -149,7 +171,7 @@ export default function Questionario({ onComplete }) {
                 </ul>
             </div>
 
-            {/* Retos */}
+            {/* Retos (PÁGINA 3)*/}
             <div className="summary-row">
                 <span className="summary-title">📌 Te cuesta:</span>
                 <ul className="summary-bubbles">
@@ -161,7 +183,7 @@ export default function Questionario({ onComplete }) {
                 </ul>
             </div>
 
-            {/* Herramientas */}
+            {/* Herramientas (PÁGINA 4)*/}
             <div className="summary-row">
                 <span className="summary-title">🧠 Te ayudará usando:</span>
                 <ul className="summary-bubbles">
@@ -183,9 +205,9 @@ export default function Questionario({ onComplete }) {
 
 
 
-    /** ================================
+    /** ==============
      *  HERRAMIENTAS 
-     *  ================================
+     *  ==============
      */
 
     // Lista de herramientas disponibles
@@ -196,28 +218,6 @@ export default function Questionario({ onComplete }) {
         { id: "frasescortas", label: "✂️ Frases cortas", color: "yellow" }
     ];
 
-
-
-    /** ========================
-     *  NAVEGACIÓN ENTRE PÁGINAS
-     *  ========================
-     */
-
-    // Función para avanzar a la siguiente página
-    const nextPage = () => {
-        if (page < 5) {
-            setPage(page + 1);
-        } else {
-            onComplete(); // Termina el cuestionario y vuelve a la interfaz principal
-        }
-    };
-
-    // Función para retroceder a la página anterior
-    const prevPage = () => {
-        if (page > 1) {
-            setPage(page - 1);
-        }
-    };
 
     /* ========================
    *  CONTENIDO DE CADA PÁGINAS

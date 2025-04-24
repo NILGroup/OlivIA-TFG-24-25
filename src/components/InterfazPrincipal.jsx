@@ -371,8 +371,6 @@ export default function InterfazPrincipal({ summary }) {
         setIsSavingChat(false);
     };
 
-
-
     /** ================================
      *     RETORNO DE LA INTERFAZ 
      *  ================================
