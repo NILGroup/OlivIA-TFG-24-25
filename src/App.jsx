@@ -1,3 +1,15 @@
+/**
+ * App.jsx
+ *
+ * Punto de entrada de la aplicación OlivIA, es decir, arranca todo lo visual
+ * Controla la navegación entre el cuestionario inicial (`Questionario`)
+ * y la interfaz principal conversacional (`InterfazPrincipal`).
+ *
+ * - Usa un estado `completed` para saber si el cuestionario ya se completó.
+ * - Recoge y guarda el resumen del usuario (`summary`) para personalizar la experiencia.
+ * - Muestra el cuestionario al inicio y, tras completarlo, la interfaz principal.
+ */
+
 import { useState } from "react";
 import Questionario from "./components/Questionario";
 import InterfazPrincipal from "./components/InterfazPrincipal";

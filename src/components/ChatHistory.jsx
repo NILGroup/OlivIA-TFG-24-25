@@ -1,17 +1,26 @@
+/**
+ * ChatHistory.jsx
+ *
+ * Este componente muestra el historial de conversaciones guardadas del usuario.
+ * Permite al usuario abrir un chat anterior, visualizar sus mensajes, y reanudar
+ * la conversación con la IA desde donde la dejó. También permite cerrar el chat activo.
+ */
+
 import React from "react";
 
 const ChatHistory = ({
-    showHistory,
-    chatHistory,
-    activeChat,
-    chatFlow,
-    setActiveChat,
-    setChatFlow,
-    setShowChat,
-    setShowHelpOptions,
-    setChatHistory
+    showHistory,         // Booleano que indica si el historial está visible
+    chatHistory,         // Lista de chats guardados
+    activeChat,          // Chat actualmente abierto por el usuario
+    chatFlow,            // Flujo de mensajes actual del chat activo
+    setActiveChat,       // Función para establecer el chat activo
+    setChatFlow,         // Función para actualizar el flujo del chat
+    setShowChat,         // Función para mostrar u ocultar el chat
+    setShowHelpOptions,  // Función para mostrar los botones de ayuda al reabrir un chat
+    setChatHistory       // Función para actualizar el historial completo
 }) => {
 
+    // Cierra el chat activo y guarda cualquier cambio realizado en el flujo
     const handleCloseChat = () => {
         if (activeChat) {
             const updated = chatHistory.map(entry =>
@@ -26,12 +35,14 @@ const ChatHistory = ({
         setShowChat(false);
     };
 
+    // Abre un chat previamente guardado
     const handleOpenChat = (entry) => {
         setActiveChat(entry);
         setChatFlow([...entry.flow]);
         setShowChat(true);
         setShowHelpOptions(true);
     };
+
 
     return (
         <div className={`chat-history-sidebar ${showHistory ? "show" : "hide"}`}>
@@ -56,21 +67,7 @@ const ChatHistory = ({
                             {activeChat === entry ? (
                                 <button
                                     className="help-btn blue"
-                                    onClick={async () => {
-                                        if (activeChat) {
-                                            // Guarda los cambios antes de cerrar
-                                            const updated = chatHistory.map(entry =>
-                                                entry === activeChat
-                                                    ? { ...entry, flow: [...chatFlow], timestamp: new Date().toLocaleString() }
-                                                    : entry
-                                            );
-                                            setChatHistory(updated);
-                                        }
-
-                                        setActiveChat(null);
-                                        setChatFlow([]);
-                                        setShowChat(false);
-                                    }}
+                                    onClick={handleCloseChat}
                                 >
                                     📁 Cerrar chat
                                 </button>
@@ -78,12 +75,7 @@ const ChatHistory = ({
                             ) : (
                                 <button
                                     className="help-btn blue"
-                                    onClick={() => {
-                                        setActiveChat(entry);
-                                        setChatFlow([...entry.flow]); // Restaura el flujo completo del chat
-                                        setShowChat(true);
-                                        setShowHelpOptions(true);
-                                    }}
+                                    onClick={() => handleOpenChat(entry)}
                                 >
                                     📂 Abrir chat
                                 </button>

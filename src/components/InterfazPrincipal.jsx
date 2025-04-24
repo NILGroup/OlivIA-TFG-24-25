@@ -1,10 +1,26 @@
+/**
+ * InterfazPrincipal.jsx
+ *
+ * Este componente es el centro de la experiencia conversacional con OlivIA.
+ * Administra la lógica y estados globales: chat, historial, configuración,
+ * generación de preguntas y respuestas, interacción con la IA, y personalización
+ * basada en el cuestionario inicial (`summary`).
+ *
+ * Contiene la lógica para:
+ * - Mostrar preguntas predefinidas o personalizadas
+ * - Procesar y mostrar respuestas generadas por IA
+ * - Controlar botones de ayuda, resumen, ejemplos, sinónimos y simplificación
+ * - Gestionar historial de conversaciones y configuración del perfil del usuario
+ */
+
 import { useState } from "react";
 import usePromptFunctions from "./Prompts";
 import ConfigPanel from "./ConfigPanel";
 import ChatHistory from "./ChatHistory";
 
-import ReactMarkdown from "react-markdown";
-import robotLogo from "../assets/AventurIA_robot_sinfondo.png";
+import PreguntaInicial from "./PreguntaInicial";
+import RespuestaGenerada from "./RespuestaGenerada";
+import BotonesInteraccion from "./BotonesInteraccion";
 
 export default function InterfazPrincipal({ summary }) {
 
@@ -350,290 +366,58 @@ export default function InterfazPrincipal({ summary }) {
             )}
 
 
-
+            {/*LÓGICA GENERADOR DE PREGUNTA*/}
             {!showChat ? (
-                <>
-                    <img src={robotLogo} alt="AventurIA Logo" className="robot-logo" />
-                    <h1 className="title">
-                        {summary?.nombre ? `Hola ${summary.nombre}, ¿Qué vamos a aprender hoy?` : "Hola ¿Qué vamos a aprender hoy?"}
-                    </h1>
-
-                    {/* OPCIONES DE PREGUNTAS */}
-                    <div className="box-container">
-                        <div className="grid">
-                            {options.map((option) => (
-                                <button
-                                    key={option.id}
-                                    className={`btn ${option.color}`}
-                                    onClick={() => handleOptionClick(option)}
-                                >
-                                    {option.text} ___{option.needsQuestionMark ? " ?" : ""}
-                                </button>
-                            ))}
-                        </div>
-                        <button className="custom-btn" onClick={handleResetQuestion}>
-                            Formular una pregunta desde cero
-                        </button>
-                    </div>
-
-                    <div className={`question-container ${selectedOption ? selectedOption.color : ""}`}>
-                        <h3 className="question-title">{selectedOption ? selectedOption.text : "Formula una pregunta"}</h3>
-                        <input
-                            type="text"
-                            className="question-input"
-                            placeholder="Escribe aquí..."
-                            value={prompt}
-                            onChange={(e) => setPrompt(e.target.value)}
-                        />
-                        <button className="discover-btn" onClick={() => sendPrompt(prompt, selectedOption)}>
-                            🔍 ¡Descubrir Respuesta!
-                        </button>
-
-                    </div>
-
-                </>
+                <PreguntaInicial
+                    summary={summary}
+                    options={options}
+                    selectedOption={selectedOption}
+                    prompt={prompt}
+                    handleOptionClick={handleOptionClick}
+                    handleResetQuestion={handleResetQuestion}
+                    setPrompt={setPrompt}
+                    sendPrompt={sendPrompt}
+                />
             ) : (
-                <div className="chat-wrapper">
+                <>
+                    {/*LÓGICA GENERADOR DE RESPUESTA*/}
+                    <RespuestaGenerada
+                        chatFlow={chatFlow}
+                        expandedResponses={expandedResponses}
+                        toggleExpanded={toggleExpanded}
+                        toggleSpeech={toggleSpeech}
+                        activeSpeechId={activeSpeechId}
+                        speechState={speechState}
+                    />
 
-                    {requestingSummary && (
-                        <div className="chat-container user-container">
-                            <div className="chat-message user-message">Dame un resumen</div>
-                        </div>
-                    )}
-
-                    {requestingExample && (
-                        <div className="chat-container user-container">
-                            <div className="chat-message user-message">Explícame con un ejemplo</div>
-                        </div>
-                    )}
-
-
-                    <div className="chat-wrapper">
-                        {chatFlow.map((entry, index) => (
-                            <div
-                                key={index}
-                                className={`chat-container ${entry.type === "user" ? "user-container" : "ai-container"}`}
-                            >
-                                <div className={`chat-message ${entry.type === "user" ? "user-message" : "ai-message"}`}>
-                                    <ReactMarkdown>
-                                        {expandedResponses[index] || entry.content.length <= 1000
-                                            ? entry.content
-                                            : entry.content.slice(0, 1000) + "…"}
-                                    </ReactMarkdown>
-
-                                    {entry.type === "ai" && (
-                                        <div className="ai-bottom-row">
-                                            {entry.content.length > 1000 && (
-                                                <button
-                                                    className="see-more-btn"
-                                                    onClick={() => toggleExpanded(index)}
-                                                >
-                                                    {expandedResponses[index] ? "Ver menos" : "Ver más"}
-                                                </button>
-                                            )}
-
-                                            <button
-                                                className="audio-btn"
-                                                onClick={() => toggleSpeech(entry.content, index)}
-                                                aria-label={
-                                                    activeSpeechId !== index || speechState === "idle"
-                                                        ? "Reproducir en voz alta"
-                                                        : speechState === "playing"
-                                                            ? "Pausar reproducción"
-                                                            : "Reanudar reproducción"
-                                                }
-                                                title={
-                                                    activeSpeechId !== index || speechState === "idle"
-                                                        ? "🔊 Reproducir"
-                                                        : speechState === "playing"
-                                                            ? "⏸️ Pausar"
-                                                            : "▶️ Reanudar"
-                                                }
-                                            >
-                                                {activeSpeechId !== index || speechState === "idle"
-                                                    ? "🔊"
-                                                    : speechState === "playing"
-                                                        ? "⏸️"
-                                                        : "▶️"}
-                                            </button>
-                                        </div>
-                                    )
-                                    }
-
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-
-
-                    {showHelpOptions && !requestingSummary && (
-                        <>
-                            {/* Asegura que los botones aparecen en un nuevo contenedor debajo */}
-                            <div className="chat-container">
-                                <div className="robot-bubble">
-                                    <img src={robotLogo} alt="AventurIA" className="robot-icon" />
-                                    <p>¿Quieres que te ayude a entenderlo mejor?</p>
-                                </div>
-                            </div>
-                            <div className="chat-container">
-                                <div className="help-buttons">
-                                    <button
-                                        className="help-btn blue"
-                                        onClick={() => {
-                                            closeRedButtonOptions();     // Ocultar opciones adicionales
-                                            requestExample();      // Lógica del botón azul
-                                        }}
-                                    >
-                                        Explícame con un ejemplo
-                                    </button>
-
-                                    <button
-                                        className="help-btn green"
-                                        onClick={() => {
-                                            closeRedButtonOptions();     // Ocultar opciones adicionales
-                                            requestSummary();      // Lógica del botón verde
-                                        }}
-                                    >
-                                        Dame un resumen
-                                    </button>
-
-                                    <button
-                                        className="help-btn red"
-                                        onClick={handleSimplification}
-                                    >
-                                        Responder en lenguaje más sencillo
-                                    </button>
-
-                                    <button
-                                        className="help-btn gray"
-                                        onClick={() => {
-                                            closeRedButtonOptions();     // Ocultar opciones adicionales
-                                            setShowUsefulQuestion(true);
-                                            setShowHelpOptions(false);
-                                        }}
-                                    >
-                                        No, gracias
-                                    </button>
-                                </div>
-                            </div>
-
-                            {!showSimplificationOptions && (
-                                <div className="chat-container">
-                                    <div className="custom-followup-box">
-                                        <h4 className="custom-followup-title"><strong>¿Prefieres formular la pregunta desde cero?</strong></h4>
-                                        <textarea
-                                            className="custom-followup-textarea"
-                                            placeholder="Escribe aquí tu pregunta..."
-                                            value={prompt}
-                                            onChange={(e) => setPrompt(e.target.value)}
-                                        ></textarea>
-                                        <button
-                                            className="custom-followup-btn"
-                                            onClick={async () => {
-                                                await sendCustomPrompt(prompt);
-                                                setPrompt(""); // Limpia el campo tras enviar
-                                            }}
-                                        >
-                                            🔍 ¡Descubrir Respuesta!
-                                        </button>
-
-                                    </div>
-                                </div>
-                            )}
-
-
-                        </>
-
-                    )}
-                    {showSimplificationOptions && (
-                        <>
-                            <div className="chat-container">
-                                <div className="robot-bubble">
-                                    <img src={robotLogo} alt="AventurIA" className="robot-icon" />
-                                    <p>¿Cómo quieres que te ayude?</p>
-                                </div>
-                            </div>
-
-                            <div className="chat-container">
-                                <div className="help-buttons">
-                                    <button
-                                        className="help-btn blue"
-                                        onClick={requestSimplifiedResponse}  // Método para reformular toda la respuesta
-                                    >
-                                        📝 Reformular toda la respuesta
-                                    </button>
-
-                                    <button
-                                        className="help-btn yellow"
-                                        onClick={toggleSynonymInput}  // Método para alternar el cuadro de sinónimos
-                                    >
-                                        ✏️ Escribir palabras que no comprendo
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Cuadro de texto para sinónimos SOLO si showTextInput está activo */}
-                            {showTextInput && (
-                                <div className="chat-container">
-                                    <textarea
-                                        className="textarea-synonyms"
-                                        placeholder="Escribe aquí las palabras que no comprendas..."
-                                        value={unknownWords}
-                                        onChange={(e) => setUnknownWords(e.target.value)}
-                                    ></textarea>
-
-                                    <button
-                                        className="synonyms-btn"
-                                        onClick={() => requestSynonyms(unknownWords)}
-                                    >
-                                        🔍 Buscar sinónimos
-                                    </button>
-                                </div>
-                            )}
-                        </>
-                    )}
-                    {isSavingChat && (
-                        <div className="chat-container ai-container">
-                            <div className="chat-message ai-message saving-msg">
-                                💾 Guardando conversación...
-                            </div>
-                        </div>
-                    )}
-
-                    {showUsefulQuestion && !isSavingChat && !activeChat && (
-                        <>
-                            <div className="chat-container ai-container">
-                                <div className="robot-bubble">
-                                    <img src={robotLogo} alt="AventurIA" className="robot-icon" />
-                                    <p>¿Te ha quedado todo claro?</p>
-                                </div>
-                            </div>
-                            <div className="chat-container ai-container">
-                                <div className="help-buttons">
-                                    <button
-                                        className="help-btn gray"
-                                        onClick={() => {
-                                            setShowUsefulQuestion(false);   // Oculta la pregunta "¿Ha sido útil?"
-                                            setShowHelpOptions(true);       // Muestra opciones de ayuda
-                                            setShowConfirmationButton(true); // Activa el botón "Sí, todo claro"
-                                        }}
-                                    >
-                                        🤔 No, tengo todavía dudas
-                                    </button>
-                                    <button
-                                        className="help-btn green"
-                                        onClick={async () => await saveChatToHistory()}
-                                    >
-                                        😊 Sí, todo claro
-                                    </button>
-
-                                </div>
-                            </div>
-                        </>
-                    )}
-
-                </div>
+                    {/*LÓGICA BOTONES INTERACCIÓN CON RESPUESTA*/}
+                    <BotonesInteraccion
+                        prompt={prompt}
+                        setPrompt={setPrompt}
+                        showHelpOptions={showHelpOptions}
+                        showSimplificationOptions={showSimplificationOptions}
+                        showTextInput={showTextInput}
+                        requestingSummary={requestingSummary}
+                        requestingExample={requestingExample}
+                        unknownWords={unknownWords}
+                        setUnknownWords={setUnknownWords}
+                        requestExample={requestExample}
+                        requestSummary={requestSummary}
+                        requestSimplifiedResponse={requestSimplifiedResponse}
+                        requestSynonyms={requestSynonyms}
+                        toggleSynonymInput={toggleSynonymInput}
+                        handleSimplification={handleSimplification}
+                        closeRedButtonOptions={closeRedButtonOptions}
+                        setShowHelpOptions={setShowHelpOptions}
+                        setShowUsefulQuestion={setShowUsefulQuestion}
+                        showUsefulQuestion={showUsefulQuestion}
+                        showConfirmationButton={showConfirmationButton}
+                        setShowConfirmationButton={setShowConfirmationButton}
+                        saveChatToHistory={saveChatToHistory}
+                    />
+                </>
             )}
+
 
         </div>
     );

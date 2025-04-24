@@ -1,18 +1,27 @@
+/**
+ * Prompts.jsx
+ *
+ * Este hook personalizado encapsula toda la lógica relacionada con la generación de prompts
+ * y respuestas por parte de la IA, utilizando diferentes APIs.
+ * Incluye funciones para enviar preguntas, pedir ejemplos, resúmenes, reformulaciones, sinónimos y generar
+ * un título que englobe toda la conversación.
+ */
+
 import { useCallback } from "react";
 
 const usePromptFunctions = ({
-    summary,
-    chatFlow,
-    setChatFlow,
-    setPrompt,
-    setLoading,
-    setShowChat,
-    setShowHelpOptions,
-    setShowSimplificationOptions,
-    setShowTextInput,
-    resetHelpOptions,
-    setActiveSpeechId,
-    setSpeechState,
+    summary,                   // Información personalizada del usuario recogida en el cuestionario
+    chatFlow,                  // Flujo de conversación actual (mensajes del usuario e IA)
+    setChatFlow,               // Actualiza el flujo de conversación
+    setPrompt,                 // Actualiza el input de texto del usuario
+    setLoading,                // Controla el estado de carga (spinner)
+    setShowChat,               // Muestra la interfaz de conversación
+    setShowHelpOptions,        // Muestra los botones de ayuda tras la respuesta
+    setShowSimplificationOptions, // Muestra los botones de simplificación
+    setShowTextInput,          // Muestra el input para buscar sinónimos
+    resetHelpOptions,          // Limpia todas las ayudas activas
+    setActiveSpeechId,         // Cancela lectura por voz si hay una activa
+    setSpeechState             // Resetea el estado de voz a "idle"
 }) => {
 
     /*=========================
@@ -76,7 +85,7 @@ const usePromptFunctions = ({
     */
 
     /*====================================
-    *    FUNCIONES GENERADORAS DE PROMPT
+    *    FUNCIONES PARA CONSTRUIR PROMPT
     * ====================================*/
 
     // PERSONALIZACIÓN DE RESPUESTA DE LA IA
@@ -96,8 +105,11 @@ const usePromptFunctions = ({
         };
     }, [summary]);
 
+    /*=============================
+   *    FUNCIONES DE ENVÍO
+   *=============================*/
 
-    /* PRIMER PROMPT QUE SE LANZA */
+    // Enviar primer mensaje con opción seleccionada o personalizada
     const sendPrompt = useCallback(async (prompt, selectedOption) => {
         if (!prompt.trim()) return;
 
@@ -145,7 +157,7 @@ const usePromptFunctions = ({
 
     }, [chatFlow, buildPrompt]);
 
-    /* PROMPT QUE SE LLAMA UNA VEZ DENTRO DEL CHAT */
+    // Enviar un mensaje personalizado (texto libre o contextual)
     const sendCustomPrompt = useCallback(async (customPrompt, context = "", displayOverride = null) => {
         if (!customPrompt.trim()) return;
 
@@ -187,7 +199,9 @@ const usePromptFunctions = ({
         setLoading(false);
     }, [chatFlow, buildPrompt]);
 
-    /* PROMPT QUE SE GENERA TITULO */
+    /*=============================
+       *   GENERAR TÍTULO AUTOMÁTICO
+       *=============================*/
     const generateTitleFromChat = useCallback(async () => {
 
         const conversation = chatFlow
