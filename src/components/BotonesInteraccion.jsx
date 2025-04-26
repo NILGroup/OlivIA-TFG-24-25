@@ -32,7 +32,9 @@ export default function BotonesInteraccion({
     showUsefulQuestion,       // Booleano que indica si mostrar "¿todo claro?"
     showConfirmationButton,   // Controla si se muestra el botón de confirmación final
     setShowConfirmationButton,// Activa/desactiva el botón "Sí, todo claro"
-    saveChatToHistory         // Guarda la conversación en el historial
+    saveChatToHistory,         // Guarda la conversación en el historial
+    sendCustomPrompt
+
 }) {
     return (
         <>
@@ -86,8 +88,9 @@ export default function BotonesInteraccion({
                             {/*OPCIÓN DE NO NECESITAR MÁS AYUDA*/}
                             <button className="help-btn gray" onClick={() => {
                                 closeRedButtonOptions();
-                                setShowUsefulQuestion(true);
                                 setShowHelpOptions(false);
+                                setShowUsefulQuestion(true);
+                                setShowConfirmationButton(false);
                             }}>
                                 No, gracias
                             </button>
@@ -109,7 +112,7 @@ export default function BotonesInteraccion({
                                     className="custom-followup-btn"
                                     onClick={() => {
                                         if (prompt.trim()) {
-                                            requestSummary(prompt);
+                                            sendCustomPrompt(prompt);
                                             setPrompt("");
                                         }
                                     }}
@@ -178,7 +181,7 @@ export default function BotonesInteraccion({
                                 onClick={() => {
                                     setShowUsefulQuestion(false);
                                     setShowHelpOptions(true);
-                                    setShowConfirmationButton(true);
+                                    setShowConfirmationButton(false);
                                 }}
                             >
                                 🤔 No, tengo todavía dudas

@@ -14,12 +14,13 @@
  */
 
 import { useState } from "react";
+import robotLogo from "../assets/AventurIA_robot_sinfondo.png";
+
 import usePromptFunctions from "./Prompts";
 import ConfigPanel from "./ConfigPanel";
 import ChatHistory from "./ChatHistory";
 
-import PreguntaInicial from "./PreguntaInicial";
-import RespuestaGenerada from "./RespuestaGenerada";
+import Chat from "./Chat";
 import BotonesInteraccion from "./BotonesInteraccion";
 
 export default function InterfazPrincipal({ summary }) {
@@ -365,23 +366,63 @@ export default function InterfazPrincipal({ summary }) {
                 </div>
             )}
 
-
-            {/*LÓGICA GENERADOR DE PREGUNTA*/}
+            {/*GENERADOR/SELECCIONADOR DE PREGUNTA*/}
             {!showChat ? (
-                <PreguntaInicial
-                    summary={summary}
-                    options={options}
-                    selectedOption={selectedOption}
-                    prompt={prompt}
-                    handleOptionClick={handleOptionClick}
-                    handleResetQuestion={handleResetQuestion}
-                    setPrompt={setPrompt}
-                    sendPrompt={sendPrompt}
-                />
+                <>
+                    {/* Logo y saludo inicial personalizado */}
+                    <img src={robotLogo} alt="AventurIA Logo" className="robot-logo" />
+                    <h1 className="title">
+                        {summary?.nombre
+                            ? `Hola ${summary.nombre}, ¿Qué vamos a aprender hoy?`
+                            : "Hola ¿Qué vamos a aprender hoy?"}
+                    </h1>
+
+                    {/* Opciones de preguntas predefinidas */}
+                    <div className="box-container">
+                        <div className="grid">
+                            {options.map((option) => (
+                                <button
+                                    key={option.id}
+                                    className={`btn ${option.color}`}
+                                    onClick={() => handleOptionClick(option)}
+                                >
+                                    {option.text} ___{option.needsQuestionMark ? " ?" : ""}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Botón para escribir una pregunta personalizada */}
+                        <button className="custom-btn" onClick={handleResetQuestion}>
+                            Formular una pregunta desde cero
+                        </button>
+                    </div>
+
+                    {/* Input para la pregunta */}
+                    <div className={`question-container ${selectedOption ? selectedOption.color : ""}`}>
+                        <h3 className="question-title">
+                            {selectedOption ? selectedOption.text : "Formula una pregunta"}
+                        </h3>
+
+                        <input
+                            type="text"
+                            className="question-input"
+                            placeholder="Escribe aquí..."
+                            value={prompt}
+                            onChange={(e) => setPrompt(e.target.value)}
+                        />
+
+                        <button
+                            className="discover-btn"
+                            onClick={() => sendPrompt(prompt, selectedOption)}
+                        >
+                            🔍 ¡Descubrir Respuesta!
+                        </button>
+                    </div>
+                </>
             ) : (
                 <>
-                    {/*LÓGICA GENERADOR DE RESPUESTA*/}
-                    <RespuestaGenerada
+                    {/*LÓGICA GENERADOR DE RESPUESTA Y MANEJO CHAT*/}
+                    <Chat
                         chatFlow={chatFlow}
                         expandedResponses={expandedResponses}
                         toggleExpanded={toggleExpanded}
@@ -414,6 +455,7 @@ export default function InterfazPrincipal({ summary }) {
                         showConfirmationButton={showConfirmationButton}
                         setShowConfirmationButton={setShowConfirmationButton}
                         saveChatToHistory={saveChatToHistory}
+                        sendCustomPrompt={sendCustomPrompt}
                     />
                 </>
             )}

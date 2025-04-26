@@ -1,3 +1,22 @@
+/**
+ * Questionario.jsx
+ *
+ * Este componente representa un cuestionario que recopila información sobre:
+ * - El nombre del usuario
+ * - Con qué condiciones o discapacidades se identifica
+ * - Qué retos tiene al aprender o entender información
+ * - Qué herramientas le resultan más útiles para ayudarle con los retos
+ * 
+ * Con la finalidad de personalizar al máximo su experiencia usando OlivIA.
+ *
+ * A medida que el usuario avanza, se guarda la información en un resumen (`summary`),
+ * que luego se utiliza para adaptar la experiencia conversacional.
+ * 
+ * Al completar el formulario, se llama a `onComplete(summary)`, que transfiere los datos
+ * a la interfaz principal de la aplicación.
+ */
+
+
 import { useState } from "react";
 import "../App.css";
 import robotLogo from "../assets/AventurIA_robot_sinfondo.png";

@@ -1,5 +1,5 @@
 /**
- * RespuestaGenerada.jsx
+ * Chat.jsx
  *
  *  Este componente se encarga de renderizar todo el flujo de conversación
  *  que ha ocurrido en el chat. Muestra tanto los mensajes del usuario como 
@@ -10,7 +10,7 @@
 import React from "react";
 import ReactMarkdown from "react-markdown";
 
-export default function RespuestaGenerada({
+export default function Chat({
     chatFlow,            // Array que contiene todos los mensajes del chat (usuario y IA)
     expandedResponses,   // Objeto que indica qué respuestas están expandidas
     toggleExpanded,      // Función para alternar entre "ver más" y "ver menos"
