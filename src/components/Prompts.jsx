@@ -99,46 +99,50 @@ const usePromptFunctions = ({
     }, [chatFlow, buildPrompt]);
 
     // Enviar un mensaje personalizado (texto libre o contextual)
-    const sendCustomPrompt = useCallback(async (customPrompt, context = "", displayOverride = null) => {
-        if (!customPrompt.trim()) return;
+    const sendCustomPrompt = useCallback(
+        async (customPrompt, context = "", displayOverride = null, fetchFunction = fetchFromGroq) => {
+            if (!customPrompt.trim()) return;
 
-        window.speechSynthesis.cancel();
-        setActiveSpeechId(null);
-        setSpeechState("idle");
+            window.speechSynthesis.cancel();
+            setActiveSpeechId(null);
+            setSpeechState("idle");
 
-        resetHelpOptions();
-        setLoading(true);
-        setShowChat(true);
+            resetHelpOptions();
+            setLoading(true);
+            setShowChat(true);
 
-        const { apiPrompt } = buildPrompt(context ? `${context} ${customPrompt}` : customPrompt);
-        const displayPrompt = displayOverride || customPrompt;
+            const { apiPrompt } = buildPrompt(context ? `${context} ${customPrompt}` : customPrompt);
+            const displayPrompt = displayOverride || customPrompt;
 
-        setChatFlow((prev) => [
-            ...prev,
-            { type: "user", content: displayPrompt },
-            { type: "loading", content: "⌛ Cargando..." }
-        ]);
+            setChatFlow((prev) => [
+                ...prev,
+                { type: "user", content: displayPrompt },
+                { type: "loading", content: "⌛ Cargando..." }
+            ]);
 
-        const messages = [
-            ...chatFlow
-                .filter(entry => entry.type === "user" || entry.type === "ai")
-                .map(entry => ({
-                    role: entry.type === "user" ? "user" : "assistant",
-                    content: entry.content,
-                })),
-            { role: "user", content: apiPrompt }
-        ];
+            const messages = [
+                ...chatFlow
+                    .filter(entry => entry.type === "user" || entry.type === "ai")
+                    .map(entry => ({
+                        role: entry.type === "user" ? "user" : "assistant",
+                        content: entry.content,
+                    })),
+                { role: "user", content: apiPrompt }
+            ];
 
-        const response = await fetchFromGroq(messages);
+            const response = await fetchFunction(messages);   //DEPENDIENDO DE LA API QUE SE LE PASE X PARAMETRO SE USA UNA U OTRA
 
-        setChatFlow((prev) => [
-            ...prev.filter((entry) => entry.type !== "loading"),
-            { type: "ai", content: response },
-        ]);
+            setChatFlow((prev) => [
+                ...prev.filter((entry) => entry.type !== "loading"),
+                { type: "ai", content: response },
+            ]);
 
-        setShowHelpOptions(true);
-        setLoading(false);
-    }, [chatFlow, buildPrompt]);
+            setShowHelpOptions(true);
+            setLoading(false);
+        },
+        [chatFlow, buildPrompt]
+    );
+
 
     /*=============================
        *   GENERAR TÍTULO AUTOMÁTICO
@@ -180,7 +184,7 @@ const usePromptFunctions = ({
 
         const lastResponse = getLastAIResponse();
         if (!lastResponse.trim()) return;
-        sendCustomPrompt(lastResponse, "Resumir el siguiente texto:", "Dame un resumen");
+        sendCustomPrompt(lastResponse, "Resumir el siguiente texto:", "Dame un resumen", fetchFromGroq);
 
     }, [getLastAIResponse, sendCustomPrompt]);
 
@@ -188,7 +192,7 @@ const usePromptFunctions = ({
 
         const lastResponse = getLastAIResponse();
         if (!lastResponse.trim()) return;
-        sendCustomPrompt(lastResponse, "Dame un ejemplo del siguiente texto:", "Explícame con un ejemplo");
+        sendCustomPrompt(lastResponse, "Dame un ejemplo del siguiente texto:", "Explícame con un ejemplo", fetchFromGroq);
 
     }, [getLastAIResponse, sendCustomPrompt]);
 
@@ -197,7 +201,7 @@ const usePromptFunctions = ({
         const lastResponse = getLastAIResponse();
         if (!lastResponse.trim()) return;
         const simplifiedPrompt = `"${lastResponse}"`;
-        sendCustomPrompt(simplifiedPrompt, "Reformular de la manera más sencilla y corta posible", "Reformular toda la respuesta");
+        sendCustomPrompt(simplifiedPrompt, "Reformular de la manera más sencilla y corta posible", "Reformular toda la respuesta", fetchFromGroq);
         setShowSimplificationOptions(false);
 
     }, [getLastAIResponse, sendCustomPrompt]);
@@ -206,7 +210,7 @@ const usePromptFunctions = ({
 
         if (words.trim()) {
             const synonymPrompt = `${words}`;
-            sendCustomPrompt(synonymPrompt, "Dame un sinónimo y una definición corta y muy sencilla de", `Dame sinónimos de ${synonymPrompt}`);
+            sendCustomPrompt(synonymPrompt, "Dame un sinónimo y una definición corta y muy sencilla de", `Dame sinónimos de ${synonymPrompt}`, fetchFromGroq);
             setShowTextInput(false);
         } else {
             alert("Por favor, escribe algunas palabras para buscar sinónimos.");
