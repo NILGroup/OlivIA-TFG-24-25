@@ -5,6 +5,7 @@ import tsconfigPaths from "vite-tsconfig-paths"
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: "/OlivIA-TFG-24-25/",
   plugins: [
     // tailwindcss(),
     react(), tsconfigPaths()
